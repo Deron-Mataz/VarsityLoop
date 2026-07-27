@@ -1,0 +1,10 @@
+@{
+    ViewData["Title"] = "Sign In Required";
+    Layout = "_Layout";
+}
+<div class="container py-5 text-center">
+    <h1 class="display-4 fw-bold text-primary">401</h1>
+    <h2 class="h4 mb-3">You need to sign in first</h2>
+    <p class="text-muted mb-4">This page is only available to logged-in users.</p>
+    <a asp-controller="Account" asp-action="Login" class="btn btn-primary">Log In</a>
+</div>

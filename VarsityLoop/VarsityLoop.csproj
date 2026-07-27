@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>varsityloop-secrets-001</UserSecretsId>
+    <RootNamespace>VarsityLoop</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Firebase Authentication (Admin SDK for server-side verification) -->
+    <PackageReference Include="FirebaseAdmin" Version="3.0.1" />
+
+    <!-- Firebase Firestore -->
+    <PackageReference Include="Google.Cloud.Firestore" Version="3.6.0" />
+
+    <!-- Firebase Storage (REST-based client) -->
+    <PackageReference Include="Google.Cloud.Storage.V1" Version="4.10.0" />
+
+    <!-- Firebase Auth REST client (used for sign-in/sign-up via REST, since Admin SDK is server-only) -->
+    <PackageReference Include="FirebaseAuthentication.net" Version="4.1.0" />
+
+    <!-- Cookie auth is built into ASP.NET Core, no extra package needed -->
+
+    <!-- Image processing/validation -->
+    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
+
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Never publish real secrets -->
+    <Content Remove="appsettings.json" />
+    <Content Include="appsettings.json">
+      <CopyToPublishDirectory>Never</CopyToPublishDirectory>
+    </Content>
+  </ItemGroup>
+
+</Project>

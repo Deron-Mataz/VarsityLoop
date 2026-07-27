@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - @(ViewData["SiteName"] ?? "Varsity Loop")</title>
+
+    <!--
+        Bootstrap 5 - loaded from the jsDelivr CDN with a Subresource Integrity (SRI)
+        hash rather than a local LibMan-restored copy. The earlier LibMan approach
+        required a "restore client-side libraries" step that's easy to miss in
+        Visual Studio, which silently left wwwroot/lib empty and the site unstyled.
+        The SRI hash below still guarantees the exact file served can't be tampered
+        with in transit, so this keeps the same integrity guarantee without the
+        manual restore step.
+    -->
+    <link rel="stylesheet"
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+          crossorigin="anonymous" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <link rel="icon" href="@(ViewData["FaviconUrl"] ?? "/favicon.ico")" />
+</head>
+<body>
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top vl-navbar">
+            <div class="container">
+                <a class="navbar-brand fw-bold vl-brand" asp-controller="Home" asp-action="Index">
+                    @if (ViewData["LogoUrl"] != null)
+                    {
+                        <img src="@ViewData["LogoUrl"]" alt="Logo" height="32" class="me-2" />
+                    }
+                    @(ViewData["SiteName"] ?? "Varsity Loop")
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="mainNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
+                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Home</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Listings" asp-action="Browse">Textbooks</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Accommodation" asp-action="Index">Accommodation</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Electronics" asp-action="Index">Electronics</a></li>
+                        <li class="nav-item"><a class="nav-link" asp-controller="Services" asp-action="Index">Services</a></li>
+                    </ul>
+                    <ul class="navbar-nav">
+                        @if (User.Identity?.IsAuthenticated == true)
+                        {
+                            if (User.IsInRole(VarsityLoop.Models.Entities.RoleNames.Admin) || User.IsInRole(VarsityLoop.Models.Entities.RoleNames.SuperAdmin))
+                            {
+                                <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Index">Admin</a></li>
+                            }
+                            <li class="nav-item d-flex align-items-center">
+                                <span class="nav-link pe-2">Hi, @User.Identity.Name</span>
+                            </li>
+                            <li class="nav-item d-flex align-items-center">
+                                <form asp-controller="Account" asp-action="Logout" method="post" class="ms-lg-2">
+                                    <button type="submit" class="btn btn-outline-secondary btn-sm">Log Out</button>
+                                </form>
+                            </li>
+                        }
+                        else
+                        {
+                            <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Login">Log In</a></li>
+                            <li class="nav-item"><a class="btn btn-primary vl-btn-primary ms-lg-2" asp-controller="Account" asp-action="Register">Sign Up</a></li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <footer class="vl-footer mt-5 py-4 border-top bg-light">
+        <div class="container text-center text-muted small">
+            <p class="mb-0">@(ViewData["FooterText"] ?? $"&copy; {DateTime.UtcNow.Year} Varsity Loop. All rights reserved.")</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+            integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+            crossorigin="anonymous"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

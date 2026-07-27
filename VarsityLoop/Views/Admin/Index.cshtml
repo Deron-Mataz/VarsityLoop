@@ -1,0 +1,13 @@
+@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<div class="container py-5">
+    <h1 class="h3 mb-2">Admin Dashboard</h1>
+    <p class="text-muted mb-4">Signed in as <strong>@User.Identity?.Name</strong> (@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value)</p>
+
+    <div class="vl-card vl-empty-state">
+        <h5>Full dashboard coming in Phase 6</h5>
+        <p class="mb-0">Users, Listings, Categories, Site Settings, Media Library, Reports, Activity Logs, and Roles management all land here next.</p>
+    </div>
+</div>

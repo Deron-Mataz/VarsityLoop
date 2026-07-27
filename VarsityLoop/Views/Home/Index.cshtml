@@ -1,0 +1,80 @@
+@{
+    ViewData["Title"] = "Home";
+}
+
+<section class="py-5" style="background: linear-gradient(135deg, var(--vl-primary-blue), #163a9e);">
+    <div class="container py-4 text-center text-white">
+        <h1 class="fw-bold display-5">@(ViewData["HeroHeading"] ?? "Buy, sell, and swap with students at your university")</h1>
+        <p class="lead mb-4 opacity-75">
+            @(ViewData["HeroDescription"] ?? "Textbooks first, everything student life needs next.")
+        </p>
+
+        <form class="mx-auto vl-card p-2 d-flex" style="max-width: 640px;" asp-controller="Listings" asp-action="Browse" method="get">
+            <input type="text" name="q" class="form-control border-0" placeholder="Search textbooks, courses, ISBNs..." />
+            <button type="submit" class="btn btn-primary ms-2">Search</button>
+        </form>
+    </div>
+</section>
+
+<div class="container py-5">
+
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h4 mb-0">Featured Listings</h2>
+            <a asp-controller="Listings" asp-action="Browse" class="small">View all &rarr;</a>
+        </div>
+
+        @* Featured listings will populate here once Phase 4 (Listings core) ships. *@
+        <div class="vl-card vl-empty-state">
+            <h5>No listings yet</h5>
+            <p class="mb-0">Be the first to list a textbook once registrations open.</p>
+        </div>
+    </section>
+
+    <section class="mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="h4 mb-0">Newest Listings</h2>
+            <a asp-controller="Listings" asp-action="Browse" class="small">View all &rarr;</a>
+        </div>
+
+        <div class="vl-card vl-empty-state">
+            <h5>Nothing posted yet</h5>
+            <p class="mb-0">New listings will show up here as soon as they're created.</p>
+        </div>
+    </section>
+
+    <section class="mb-5">
+        <h2 class="h4 mb-3">Browse Categories</h2>
+        <div class="vl-card vl-empty-state">
+            <h5>Categories coming soon</h5>
+            <p class="mb-0">Admins can add categories from the Admin Panel.</p>
+        </div>
+    </section>
+
+    <section class="row g-4 mb-5">
+        <div class="col-md-4">
+            <div class="vl-card p-4 h-100">
+                <h5>1. Create a listing</h5>
+                <p class="text-muted mb-0">Post your textbook in minutes with photos and pricing.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="vl-card p-4 h-100">
+                <h5>2. Connect with buyers</h5>
+                <p class="text-muted mb-0">Students at your university browse and reach out.</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="vl-card p-4 h-100">
+                <h5>3. Meet up and trade</h5>
+                <p class="text-muted mb-0">Arrange a safe, on-campus handoff.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="text-center py-5 vl-card">
+        <h3 class="mb-3">Ready to save on textbooks?</h3>
+        <a class="btn btn-primary btn-lg" asp-controller="Account" asp-action="Register">Get Started</a>
+    </section>
+
+</div>
