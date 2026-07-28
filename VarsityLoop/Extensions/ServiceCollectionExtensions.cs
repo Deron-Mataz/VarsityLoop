@@ -87,6 +87,8 @@ namespace VarsityLoop.Extensions
             services.AddScoped<IFirestoreRepository<SiteSettings>>(sp =>
                 new FirestoreRepository<SiteSettings>(sp.GetRequiredService<FirestoreDb>(), "SiteSettings"));
 
+            services.AddScoped<IListingRepository, ListingRepository>();
+
             // Future repositories are registered the same generic way, e.g.:
             // services.AddScoped<IFirestoreRepository<Listing>>(sp =>
             //     new FirestoreRepository<Listing>(sp.GetRequiredService<FirestoreDb>(), "Listings"));
@@ -104,6 +106,15 @@ namespace VarsityLoop.Extensions
             services.AddMemoryCache();
             services.AddScoped<ISiteSettingsService, SiteSettingsService>();
             services.AddScoped<IStorageService, FirebaseStorageService>();
+            return services;
+        }
+
+        /// <summary>
+        /// Registers the Listings core domain service (Phase 4 - Books MVP).
+        /// </summary>
+        public static IServiceCollection AddListingServices(this IServiceCollection services)
+        {
+            services.AddScoped<IListingService, ListingService>();
             return services;
         }
 

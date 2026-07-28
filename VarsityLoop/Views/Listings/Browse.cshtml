@@ -1,0 +1,48 @@
+@model List<VarsityLoop.Models.Entities.Listing>
+@{
+    ViewData["Title"] = "Textbooks";
+    var searchTerm = ViewData["SearchTerm"] as string;
+    var nextPageToken = ViewData["NextPageToken"] as string;
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <h1 class="h3 mb-0">Textbooks</h1>
+        <a asp-controller="Listings" asp-action="Create" class="btn btn-primary">List a Textbook</a>
+    </div>
+
+    <form class="vl-card p-2 d-flex mb-4" style="max-width: 640px;" asp-controller="Listings" asp-action="Browse" method="get">
+        <input type="text" name="q" value="@searchTerm" class="form-control border-0" placeholder="Search title, author, ISBN, course..." />
+        <button type="submit" class="btn btn-primary ms-2">Search</button>
+        @if (!string.IsNullOrEmpty(searchTerm))
+        {
+            <a asp-controller="Listings" asp-action="Browse" class="btn btn-outline-secondary ms-2">Clear</a>
+        }
+    </form>
+
+    @if (Model.Count == 0)
+    {
+        <div class="vl-card vl-empty-state">
+            <h5>@(string.IsNullOrEmpty(searchTerm) ? "No listings yet" : $"No results for \"{searchTerm}\"")</h5>
+            <p class="mb-0">@(string.IsNullOrEmpty(searchTerm) ? "Be the first to list a textbook." : "Try a different search term.")</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var listing in Model)
+            {
+                <div class="col-sm-6 col-md-4 col-lg-3">
+                    <partial name="_ListingCard" model="listing" />
+                </div>
+            }
+        </div>
+
+        @if (!string.IsNullOrEmpty(nextPageToken))
+        {
+            <div class="text-center mt-4">
+                <a asp-controller="Listings" asp-action="Browse" asp-route-pageToken="@nextPageToken" class="btn btn-outline-primary">Load More</a>
+            </div>
+        }
+    }
+</div>

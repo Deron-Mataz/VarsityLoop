@@ -23,9 +23,6 @@
 
     <!-- Cookie auth is built into ASP.NET Core, no extra package needed -->
 
-    <!-- Image processing/validation -->
-    <PackageReference Include="SixLabors.ImageSharp" Version="3.1.5" />
-
   </ItemGroup>
 
   <ItemGroup>

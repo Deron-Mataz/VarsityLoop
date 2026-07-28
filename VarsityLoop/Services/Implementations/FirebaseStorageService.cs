@@ -11,11 +11,16 @@ namespace VarsityLoop.Services.Implementations
     /// Firebase:StorageBucket, reusing the same service account credential
     /// already resolved for Firestore/Admin SDK (see ServiceCollectionExtensions).
     ///
-    /// NOTE: this uploads the object but does not set a per-object ACL, because
-    /// Firebase Storage buckets created after late 2020 default to Uniform
-    /// Bucket-Level Access, which rejects per-object ACL calls outright. For
-    /// uploaded files to be publicly viewable (logos, favicons, listing photos),
-    /// make sure your bucket's Firebase Storage security rules allow public
+    /// Uploads use the raw GCS client (no per-object ACL is set - Firebase
+    /// Storage buckets default to Uniform Bucket-Level Access, which rejects
+    /// per-object ACL calls outright). Returned URLs instead point at Firebase's
+    /// own serving endpoint (firebasestorage.googleapis.com), NOT the raw GCS
+    /// endpoint (storage.googleapis.com) - only the Firebase endpoint respects
+    /// Firebase Storage Security Rules. The raw GCS endpoint only respects
+    /// bucket-level IAM, which is why a rules-based "allow read: if true" alone
+    /// does not make a storage.googleapis.com URL public.
+    ///
+    /// Make sure your bucket's Firebase Storage security rules allow public
     /// read on the relevant folders, e.g.:
     ///   match /branding/{allPaths=**} { allow read: if true; allow write: if false; }
     /// (write access is always via this server-side service account, never
@@ -38,7 +43,11 @@ namespace VarsityLoop.Services.Implementations
 
             await _storageClient.UploadObjectAsync(_bucketName, objectName, contentType, fileStream);
 
-            return $"https://storage.googleapis.com/{_bucketName}/{objectName}";
+            // Firebase's serving endpoint requires the full object path (including
+            // the "/" separators) to be percent-encoded as a single path segment.
+            var encodedObjectName = Uri.EscapeDataString(objectName);
+
+            return $"https://firebasestorage.googleapis.com/v0/b/{_bucketName}/o/{encodedObjectName}?alt=media";
         }
 
         private static string SanitizeFileName(string fileName)

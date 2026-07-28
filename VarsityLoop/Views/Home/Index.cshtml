@@ -24,11 +24,27 @@
             <a asp-controller="Listings" asp-action="Browse" class="small">View all &rarr;</a>
         </div>
 
-        @* Featured listings will populate here once Phase 4 (Listings core) ships. *@
-        <div class="vl-card vl-empty-state">
-            <h5>No listings yet</h5>
-            <p class="mb-0">Be the first to list a textbook once registrations open.</p>
-        </div>
+        @{
+            var featuredListings = ViewData["FeaturedListings"] as List<VarsityLoop.Models.Entities.Listing> ?? new();
+        }
+        @if (featuredListings.Count == 0)
+        {
+            <div class="vl-card vl-empty-state">
+                <h5>No listings yet</h5>
+                <p class="mb-0">Be the first to list a textbook once registrations open.</p>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var listing in featuredListings)
+                {
+                    <div class="col-sm-6 col-md-3">
+                        <partial name="_ListingCard" model="listing" />
+                    </div>
+                }
+            </div>
+        }
     </section>
 
     <section class="mb-5">
@@ -37,10 +53,27 @@
             <a asp-controller="Listings" asp-action="Browse" class="small">View all &rarr;</a>
         </div>
 
-        <div class="vl-card vl-empty-state">
-            <h5>Nothing posted yet</h5>
-            <p class="mb-0">New listings will show up here as soon as they're created.</p>
-        </div>
+        @{
+            var newestListings = ViewData["NewestListings"] as List<VarsityLoop.Models.Entities.Listing> ?? new();
+        }
+        @if (newestListings.Count == 0)
+        {
+            <div class="vl-card vl-empty-state">
+                <h5>Nothing posted yet</h5>
+                <p class="mb-0">New listings will show up here as soon as they're created.</p>
+            </div>
+        }
+        else
+        {
+            <div class="row g-4">
+                @foreach (var listing in newestListings)
+                {
+                    <div class="col-sm-6 col-md-3">
+                        <partial name="_ListingCard" model="listing" />
+                    </div>
+                }
+            </div>
+        }
     </section>
 
     <section class="mb-5">

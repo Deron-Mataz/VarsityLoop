@@ -9,12 +9,12 @@ This solution is being built in phases. **Phase 1 (Foundation) is complete.**
 - [x] Phase 1 — Project scaffold, Firebase DI wiring, generic Firestore repository layer, error pages (404/401/403/500), base layout, homepage shell with empty states
 - [x] Phase 2 — Firebase Authentication (register/login/logout/forgot-password/email verification), Firestore-driven RBAC, cookie session auth
 - [x] Phase 3 — Site Settings CMS + dynamic branding
-- [ ] Phase 4 — Listings core (Books MVP), image upload
+- [x] Phase 4 — Listings core (Books MVP), image upload
 - [ ] Phase 5 — Search, filters, pagination, categories, homepage wiring
 - [ ] Phase 6 — Admin panel (users, listings, reports, activity logs, roles)
 - [ ] Phase 7 — Seller profiles, favorites/wishlist, Accommodation/Electronics/Services placeholders
 
-Later phases will build directly on top of what's here — nothing below needs to be redone.
+Later features will be built directly on top of what's here
 
 ## Setup (Visual Studio 2022)
 
@@ -36,18 +36,9 @@ Later phases will build directly on top of what's here — nothing below needs t
 
 6. **First admin account**: in `appsettings.json`, set `AppSettings:DefaultAdminEmail` to the email you plan to register with. That account is automatically granted the `SuperAdmin` role the moment it registers, so you have a way into the Admin Panel on a fresh database. Every other sign-up defaults to the `User` role — all further role changes happen from the Admin Panel (Phase 6) from then on.
 
-7. **Firebase Storage public read rules**: logos/favicons uploaded from Site Settings (Admin Panel) need to be publicly viewable. In Firebase Console → Storage → Rules, allow public read on the `branding/` path (write stays server-only, since uploads always go through this app's service account, never the browser directly):
-   ```
-   rules_version = '2';
-   service firebase.storage {
-     match /b/{bucket}/o {
-       match /branding/{allPaths=**} {
-         allow read: if true;
-         allow write: if false;
-       }
-     }
-   }
-   ```
+7. **Firebase Storage public read rules**: logos/favicons (Site Settings) and listing photos (Phase 4) need to be publicly viewable. In Firebase Console → Storage → Rules, paste `storage.rules` from the repo root and click **Publish** (write access stays server-only, since uploads always go through this app's service account, never the browser directly).
+
+8. **Firestore composite indexes**: Phase 4's listing queries (browse-by-status, search, "my listings") each filter on two fields and sort by a third, which Firestore requires a composite index for. The **first time** each query runs, it throws an error containing a direct "create this index" link — click it, wait ~1-2 minutes for the index to build, then retry. This only needs to happen once per query shape (Browse, MyListings), not per listing.
 
 ## Architecture notes
 

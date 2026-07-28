@@ -1,0 +1,230 @@
+using Microsoft.AspNetCore.Http;
+using VarsityLoop.Models.Common;
+using VarsityLoop.Models.Entities;
+using VarsityLoop.Models.ViewModels.Listings;
+using VarsityLoop.Repositories.Interfaces;
+using VarsityLoop.Services.Interfaces;
+
+namespace VarsityLoop.Services.Implementations
+{
+    public class ListingService : IListingService
+    {
+        private static readonly string[] AllowedImageTypes = { "image/jpeg", "image/png", "image/webp" };
+        private const long MaxImageBytes = 5 * 1024 * 1024; // 5 MB
+        private const int MaxImagesPerListing = 6;
+
+        private readonly IListingRepository _listingRepository;
+        private readonly IStorageService _storageService;
+
+        public ListingService(IListingRepository listingRepository, IStorageService storageService)
+        {
+            _listingRepository = listingRepository;
+            _storageService = storageService;
+        }
+
+        public Task<PagedResult<Listing>> BrowseAsync(int pageSize, string? pageToken = null)
+            => _listingRepository.GetActivePagedAsync(pageSize, pageToken);
+
+        public Task<List<Listing>> SearchAsync(string searchTerm)
+            => _listingRepository.SearchAsync(searchTerm);
+
+        public async Task<Listing?> GetDetailsAsync(string id, bool countView)
+        {
+            var listing = await _listingRepository.GetByIdAsync(id);
+
+            if (listing != null && countView)
+            {
+                await _listingRepository.IncrementViewsAsync(id);
+                listing.Views += 1;
+            }
+
+            return listing;
+        }
+
+        public Task<List<Listing>> GetMyListingsAsync(string sellerId)
+            => _listingRepository.GetBySellerAsync(sellerId);
+
+        public async Task<OperationResult<string>> CreateAsync(ListingFormViewModel model, string sellerId, string sellerName)
+        {
+            var imageFiles = model.ImageFiles?.Where(f => f.Length > 0).ToList() ?? new List<IFormFile>();
+
+            if (imageFiles.Count == 0)
+            {
+                return OperationResult<string>.Fail("Please add at least one photo.");
+            }
+
+            var validationError = ValidateImages(imageFiles);
+            if (validationError != null)
+            {
+                return OperationResult<string>.Fail(validationError);
+            }
+
+            // Generate the document Id up front so uploaded images can live under
+            // a folder named for the listing they belong to (listings/{id}/...).
+            var listingId = Guid.NewGuid().ToString("N");
+            var imageUrls = await UploadImagesAsync(imageFiles, listingId);
+
+            var listing = new Listing
+            {
+                Id = listingId,
+                Category = "Textbooks",
+                Title = model.Title.Trim(),
+                Description = model.Description.Trim(),
+                Price = model.Price,
+                Author = model.Author?.Trim(),
+                Isbn = model.Isbn?.Trim(),
+                Course = model.Course?.Trim(),
+                Faculty = model.Faculty?.Trim(),
+                Condition = model.Condition.ToString(),
+                University = model.University.Trim(),
+                Location = model.Location?.Trim(),
+                ImageUrls = imageUrls,
+                SellerId = sellerId,
+                SellerName = sellerName,
+                Status = ListingStatus.Active.ToString()
+            };
+
+            await _listingRepository.AddAsync(listing);
+
+            return OperationResult<string>.Ok(listingId);
+        }
+
+        public async Task<OperationResult> UpdateAsync(ListingFormViewModel model, string currentUserId, bool currentUserIsModerator)
+        {
+            if (string.IsNullOrEmpty(model.Id))
+            {
+                return OperationResult.Fail("Missing listing Id.");
+            }
+
+            var listing = await _listingRepository.GetByIdAsync(model.Id);
+            if (listing == null)
+            {
+                return OperationResult.Fail("Listing not found.");
+            }
+
+            if (listing.SellerId != currentUserId && !currentUserIsModerator)
+            {
+                return OperationResult.Fail("You don't have permission to edit this listing.");
+            }
+
+            var newImageFiles = model.ImageFiles?.Where(f => f.Length > 0).ToList() ?? new List<IFormFile>();
+            var totalImageCount = model.ExistingImageUrls.Count + newImageFiles.Count;
+
+            if (totalImageCount == 0)
+            {
+                return OperationResult.Fail("Please keep or add at least one photo.");
+            }
+
+            if (totalImageCount > MaxImagesPerListing)
+            {
+                return OperationResult.Fail($"A listing can have at most {MaxImagesPerListing} photos.");
+            }
+
+            if (newImageFiles.Count > 0)
+            {
+                var validationError = ValidateImages(newImageFiles);
+                if (validationError != null)
+                {
+                    return OperationResult.Fail(validationError);
+                }
+            }
+
+            var newlyUploadedUrls = newImageFiles.Count > 0
+                ? await UploadImagesAsync(newImageFiles, listing.Id)
+                : new List<string>();
+
+            listing.Title = model.Title.Trim();
+            listing.Description = model.Description.Trim();
+            listing.Price = model.Price;
+            listing.Author = model.Author?.Trim();
+            listing.Isbn = model.Isbn?.Trim();
+            listing.Course = model.Course?.Trim();
+            listing.Faculty = model.Faculty?.Trim();
+            listing.Condition = model.Condition.ToString();
+            listing.University = model.University.Trim();
+            listing.Location = model.Location?.Trim();
+            listing.ImageUrls = model.ExistingImageUrls.Concat(newlyUploadedUrls).ToList();
+
+            await _listingRepository.UpdateAsync(listing.Id, listing);
+
+            return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> DeleteAsync(string id, string currentUserId, bool currentUserIsModerator)
+        {
+            var listing = await _listingRepository.GetByIdAsync(id);
+            if (listing == null) return OperationResult.Fail("Listing not found.");
+
+            if (listing.SellerId != currentUserId && !currentUserIsModerator)
+            {
+                return OperationResult.Fail("You don't have permission to delete this listing.");
+            }
+
+            await _listingRepository.SoftDeleteAsync(id);
+            return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> SetPausedAsync(string id, bool paused, string currentUserId, bool currentUserIsModerator)
+        {
+            var listing = await _listingRepository.GetByIdAsync(id);
+            if (listing == null) return OperationResult.Fail("Listing not found.");
+
+            if (listing.SellerId != currentUserId && !currentUserIsModerator)
+            {
+                return OperationResult.Fail("You don't have permission to change this listing.");
+            }
+
+            // Sellers can only toggle between Active/Paused - Suspended/Removed are
+            // moderator-only states set from the Admin Panel (Phase 6), so this never
+            // accidentally reactivates a listing an admin suspended.
+            if (listing.Status != nameof(ListingStatus.Active) && listing.Status != nameof(ListingStatus.Paused))
+            {
+                return OperationResult.Fail("This listing can't be changed right now. Contact support.");
+            }
+
+            await _listingRepository.UpdateFieldsAsync(id, new Dictionary<string, object?>
+            {
+                { "status", (paused ? ListingStatus.Paused : ListingStatus.Active).ToString() }
+            });
+
+            return OperationResult.Ok();
+        }
+
+        private async Task<List<string>> UploadImagesAsync(List<IFormFile> files, string listingId)
+        {
+            var urls = new List<string>();
+
+            foreach (var file in files)
+            {
+                await using var stream = file.OpenReadStream();
+                var url = await _storageService.UploadPublicFileAsync(stream, file.FileName, file.ContentType, $"listings/{listingId}");
+                urls.Add(url);
+            }
+
+            return urls;
+        }
+
+        private static string? ValidateImages(List<IFormFile> files)
+        {
+            if (files.Count > MaxImagesPerListing)
+            {
+                return $"A listing can have at most {MaxImagesPerListing} photos.";
+            }
+
+            foreach (var file in files)
+            {
+                if (!AllowedImageTypes.Contains(file.ContentType))
+                {
+                    return "Photos must be JPG, PNG, or WEBP.";
+                }
+
+                if (file.Length > MaxImageBytes)
+                {
+                    return "Each photo must be under 5MB.";
+                }
+            }
+
+            return null;
+        }
+    }
+}

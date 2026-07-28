@@ -38,6 +38,9 @@ builder.Services.AddAuthServices();
 // Site Settings CMS (cached reads/writes) + Firebase Storage for media uploads.
 builder.Services.AddCmsServices();
 
+// Listings core (Phase 4 - Books MVP).
+builder.Services.AddListingServices();
+
 // Cookie-based session authentication. The cookie itself only ever carries
 // claims (uid, email, name, role) written at sign-in time from the Firestore
 // user profile - Firebase's own tokens are never stored in the cookie.
