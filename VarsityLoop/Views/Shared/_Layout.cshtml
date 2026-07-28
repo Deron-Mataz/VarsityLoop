@@ -20,6 +20,14 @@
           crossorigin="anonymous" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 
+    <!-- Dynamic branding colours from Site Settings (Admin Panel > Site Settings). -->
+    <style>
+        :root {
+            --vl-primary-blue: @(ViewData["PrimaryColour"] ?? "#1d4ed8");
+            --vl-accent-gold: @(ViewData["AccentColour"] ?? "#d4a017");
+        }
+    </style>
+
     <link rel="icon" href="@(ViewData["FaviconUrl"] ?? "/favicon.ico")" />
 </head>
 <body>
@@ -77,7 +85,34 @@
 
     <footer class="vl-footer mt-5 py-4 border-top bg-light">
         <div class="container text-center text-muted small">
-            <p class="mb-0">@(ViewData["FooterText"] ?? $"&copy; {DateTime.UtcNow.Year} Varsity Loop. All rights reserved.")</p>
+            @{
+                var socialLinks = new (string? Url, string Label)[]
+                {
+                    (ViewData["FacebookLink"] as string, "Facebook"),
+                    (ViewData["InstagramLink"] as string, "Instagram"),
+                    (ViewData["LinkedInLink"] as string, "LinkedIn"),
+                    (ViewData["TwitterLink"] as string, "Twitter/X")
+                };
+                var activeSocialLinks = socialLinks.Where(l => !string.IsNullOrEmpty(l.Url)).ToList();
+            }
+            @if (activeSocialLinks.Count > 0 || ViewData["SupportEmail"] != null || ViewData["SupportPhone"] != null)
+            {
+                <div class="mb-2">
+                    @if (ViewData["SupportEmail"] != null)
+                    {
+                        <span class="me-3">@ViewData["SupportEmail"]</span>
+                    }
+                    @if (ViewData["SupportPhone"] != null)
+                    {
+                        <span class="me-3">@ViewData["SupportPhone"]</span>
+                    }
+                    @foreach (var link in activeSocialLinks)
+                    {
+                        <a href="@link.Url" class="me-3 text-muted" target="_blank" rel="noopener">@link.Label</a>
+                    }
+                </div>
+            }
+            <p class="mb-0">@Html.Raw(ViewData["FooterText"] ?? $"&copy; {DateTime.UtcNow.Year} Varsity Loop. All rights reserved.")</p>
         </div>
     </footer>
 

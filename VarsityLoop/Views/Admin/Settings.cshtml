@@ -1,0 +1,146 @@
+@model VarsityLoop.Models.ViewModels.Admin.SiteSettingsViewModel
+@{
+    ViewData["Title"] = "Site Settings";
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Site Settings</h1>
+            <p class="text-muted mb-0">Changes here update the public site immediately.</p>
+        </div>
+        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary btn-sm">Back to Dashboard</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+
+    <form asp-controller="Admin" asp-action="Settings" method="post" enctype="multipart/form-data" novalidate>
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+        <div class="vl-card p-4 mb-4">
+            <h2 class="h5 mb-3">Branding</h2>
+
+            <div class="mb-3">
+                <label asp-for="SiteName" class="form-label"></label>
+                <input asp-for="SiteName" class="form-control" />
+                <span asp-validation-for="SiteName" class="invalid-feedback d-block small"></span>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-md-6">
+                    <label asp-for="LogoFile" class="form-label"></label>
+                    @if (!string.IsNullOrEmpty(Model.LogoUrl))
+                    {
+                        <div class="mb-2"><img src="@Model.LogoUrl" alt="Current logo" height="40" /></div>
+                    }
+                    <input asp-for="LogoFile" type="file" class="form-control" accept="image/png,image/jpeg,image/webp" />
+                    <span asp-validation-for="LogoFile" class="invalid-feedback d-block small"></span>
+                    <input type="hidden" asp-for="LogoUrl" />
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="FaviconFile" class="form-label"></label>
+                    @if (!string.IsNullOrEmpty(Model.FaviconUrl))
+                    {
+                        <div class="mb-2"><img src="@Model.FaviconUrl" alt="Current favicon" height="24" /></div>
+                    }
+                    <input asp-for="FaviconFile" type="file" class="form-control" accept="image/png,image/jpeg,image/webp" />
+                    <span asp-validation-for="FaviconFile" class="invalid-feedback d-block small"></span>
+                    <input type="hidden" asp-for="FaviconUrl" />
+                </div>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="PrimaryColour" class="form-label"></label>
+                    <div class="input-group">
+                        <input asp-for="PrimaryColour" type="color" class="form-control form-control-color" />
+                    </div>
+                    <span asp-validation-for="PrimaryColour" class="invalid-feedback d-block small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="AccentColour" class="form-label"></label>
+                    <input asp-for="AccentColour" type="color" class="form-control form-control-color" />
+                    <span asp-validation-for="AccentColour" class="invalid-feedback d-block small"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="vl-card p-4 mb-4">
+            <h2 class="h5 mb-3">Homepage</h2>
+
+            <div class="mb-3">
+                <label asp-for="HeroHeading" class="form-label"></label>
+                <input asp-for="HeroHeading" class="form-control" />
+                <span asp-validation-for="HeroHeading" class="invalid-feedback d-block small"></span>
+            </div>
+
+            <div class="mb-1">
+                <label asp-for="HeroDescription" class="form-label"></label>
+                <textarea asp-for="HeroDescription" class="form-control" rows="2"></textarea>
+                <span asp-validation-for="HeroDescription" class="invalid-feedback d-block small"></span>
+            </div>
+        </div>
+
+        <div class="vl-card p-4 mb-4">
+            <h2 class="h5 mb-3">Footer &amp; Support</h2>
+
+            <div class="mb-3">
+                <label asp-for="FooterText" class="form-label"></label>
+                <input asp-for="FooterText" class="form-control" />
+                <span asp-validation-for="FooterText" class="invalid-feedback d-block small"></span>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="SupportEmail" class="form-label"></label>
+                    <input asp-for="SupportEmail" class="form-control" />
+                    <span asp-validation-for="SupportEmail" class="invalid-feedback d-block small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="SupportPhone" class="form-label"></label>
+                    <input asp-for="SupportPhone" class="form-control" />
+                </div>
+            </div>
+        </div>
+
+        <div class="vl-card p-4 mb-4">
+            <h2 class="h5 mb-3">Social Links</h2>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label asp-for="FacebookLink" class="form-label"></label>
+                    <input asp-for="FacebookLink" class="form-control" placeholder="https://facebook.com/..." />
+                    <span asp-validation-for="FacebookLink" class="invalid-feedback d-block small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="InstagramLink" class="form-label"></label>
+                    <input asp-for="InstagramLink" class="form-control" placeholder="https://instagram.com/..." />
+                    <span asp-validation-for="InstagramLink" class="invalid-feedback d-block small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="LinkedInLink" class="form-label"></label>
+                    <input asp-for="LinkedInLink" class="form-control" placeholder="https://linkedin.com/..." />
+                    <span asp-validation-for="LinkedInLink" class="invalid-feedback d-block small"></span>
+                </div>
+                <div class="col-md-6">
+                    <label asp-for="TwitterLink" class="form-label"></label>
+                    <input asp-for="TwitterLink" class="form-control" placeholder="https://x.com/..." />
+                    <span asp-validation-for="TwitterLink" class="invalid-feedback d-block small"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="vl-card p-4 mb-4">
+            <h2 class="h5 mb-3">Maintenance</h2>
+            <div class="form-check form-switch">
+                <input asp-for="MaintenanceMode" class="form-check-input" role="switch" />
+                <label asp-for="MaintenanceMode" class="form-check-label"></label>
+            </div>
+            <p class="text-muted small mb-0 mt-2">While enabled, visitors see a "we'll be right back" page. Admins can still sign in and reach this page.</p>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Save Changes</button>
+    </form>
+</div>

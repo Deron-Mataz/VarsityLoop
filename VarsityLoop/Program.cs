@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authentication.Cookies;
 using VarsityLoop.Configuration;
 using VarsityLoop.Extensions;
+using VarsityLoop.Filters;
 using VarsityLoop.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -14,6 +15,14 @@ builder.Services.AddControllersWithViews(options =>
     // CSRF protection is applied explicitly per state-changing action via
     // [ValidateAntiForgeryToken] (see AccountController), paired with the
     // asp-antiforgery tag helper that forms include by default.
+
+    // Global filters - run on every request, every controller:
+    //  - SiteSettingsResultFilter stamps live branding onto ViewData before
+    //    any view renders, so _Layout.cshtml always reflects the CMS.
+    //  - MaintenanceModeFilter short-circuits to the maintenance page for
+    //    non-admin visitors when Site Settings > Maintenance Mode is on.
+    options.Filters.Add<SiteSettingsResultFilter>();
+    options.Filters.Add<MaintenanceModeFilter>();
 });
 
 // Firebase Admin SDK + Firestore client (throws a clear error at startup
@@ -25,6 +34,9 @@ builder.Services.AddRepositories();
 
 // Firebase-backed auth service (register/login/password reset).
 builder.Services.AddAuthServices();
+
+// Site Settings CMS (cached reads/writes) + Firebase Storage for media uploads.
+builder.Services.AddCmsServices();
 
 // Cookie-based session authentication. The cookie itself only ever carries
 // claims (uid, email, name, role) written at sign-in time from the Firestore

@@ -6,8 +6,17 @@
     <h1 class="h3 mb-2">Admin Dashboard</h1>
     <p class="text-muted mb-4">Signed in as <strong>@User.Identity?.Name</strong> (@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value)</p>
 
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <a asp-controller="Admin" asp-action="Settings" class="vl-card p-4 d-block text-decoration-none text-reset h-100">
+                <h5 class="mb-1">Site Settings</h5>
+                <p class="text-muted small mb-0">Branding, homepage copy, footer, social links, maintenance mode.</p>
+            </a>
+        </div>
+    </div>
+
     <div class="vl-card vl-empty-state">
         <h5>Full dashboard coming in Phase 6</h5>
-        <p class="mb-0">Users, Listings, Categories, Site Settings, Media Library, Reports, Activity Logs, and Roles management all land here next.</p>
+        <p class="mb-0">Users, Listings, Categories, Media Library, Reports, Activity Logs, and Roles management all land here next.</p>
     </div>
 </div>

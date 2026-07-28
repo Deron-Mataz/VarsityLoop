@@ -2,6 +2,7 @@ using FirebaseAdmin;
 using Google.Apis.Auth.OAuth2;
 using Google.Cloud.Firestore;
 using VarsityLoop.Configuration;
+using VarsityLoop.Models.Entities;
 using VarsityLoop.Repositories.Implementations;
 using VarsityLoop.Repositories.Interfaces;
 using VarsityLoop.Services.Implementations;
@@ -44,6 +45,11 @@ namespace VarsityLoop.Extensions
                 }.Build();
 
                 services.AddSingleton(firestoreDb);
+
+                // Registered so other Google Cloud clients (Firebase Storage - see
+                // FirebaseStorageService) can reuse the same resolved credential
+                // instead of re-reading configuration themselves.
+                services.AddSingleton(credential);
             }
 
             return services;
@@ -78,10 +84,26 @@ namespace VarsityLoop.Extensions
         {
             services.AddScoped<IUserRepository, UserRepository>();
 
+            services.AddScoped<IFirestoreRepository<SiteSettings>>(sp =>
+                new FirestoreRepository<SiteSettings>(sp.GetRequiredService<FirestoreDb>(), "SiteSettings"));
+
             // Future repositories are registered the same generic way, e.g.:
             // services.AddScoped<IFirestoreRepository<Listing>>(sp =>
             //     new FirestoreRepository<Listing>(sp.GetRequiredService<FirestoreDb>(), "Listings"));
 
+            return services;
+        }
+
+        /// <summary>
+        /// Registers the Site Settings CMS service (cached reads, immediate
+        /// cache invalidation on write - see SiteSettingsService) and the
+        /// Firebase Storage service used for logo/favicon/media uploads.
+        /// </summary>
+        public static IServiceCollection AddCmsServices(this IServiceCollection services)
+        {
+            services.AddMemoryCache();
+            services.AddScoped<ISiteSettingsService, SiteSettingsService>();
+            services.AddScoped<IStorageService, FirebaseStorageService>();
             return services;
         }
 
