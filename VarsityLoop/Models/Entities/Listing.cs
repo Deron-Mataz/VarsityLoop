@@ -32,8 +32,11 @@ namespace VarsityLoop.Models.Entities
     [FirestoreData]
     public class Listing : BaseEntity
     {
-        [FirestoreProperty("category")]
-        public string Category { get; set; } = "Textbooks";
+        [FirestoreProperty("categoryId")]
+        public string CategoryId { get; set; } = string.Empty;
+
+        [FirestoreProperty("categoryName")]
+        public string CategoryName { get; set; } = string.Empty;
 
         [FirestoreProperty("title")]
         public string Title { get; set; } = string.Empty;

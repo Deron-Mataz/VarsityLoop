@@ -6,8 +6,7 @@ namespace VarsityLoop.Services.Interfaces
 {
     public interface IListingService
     {
-        Task<PagedResult<Listing>> BrowseAsync(int pageSize, string? pageToken = null);
-        Task<List<Listing>> SearchAsync(string searchTerm);
+        Task<ListingBrowseResult> BrowseAsync(ListingBrowseQuery query);
         Task<Listing?> GetDetailsAsync(string id, bool countView);
         Task<List<Listing>> GetMyListingsAsync(string sellerId);
 

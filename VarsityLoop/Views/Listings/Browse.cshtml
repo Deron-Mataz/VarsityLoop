@@ -1,8 +1,7 @@
-@model List<VarsityLoop.Models.Entities.Listing>
+@model VarsityLoop.Models.ViewModels.Listings.ListingBrowseViewModel
 @{
     ViewData["Title"] = "Textbooks";
-    var searchTerm = ViewData["SearchTerm"] as string;
-    var nextPageToken = ViewData["NextPageToken"] as string;
+    var q = Model.Query;
 }
 
 <div class="container py-5">
@@ -11,26 +10,68 @@
         <a asp-controller="Listings" asp-action="Create" class="btn btn-primary">List a Textbook</a>
     </div>
 
-    <form class="vl-card p-2 d-flex mb-4" style="max-width: 640px;" asp-controller="Listings" asp-action="Browse" method="get">
-        <input type="text" name="q" value="@searchTerm" class="form-control border-0" placeholder="Search title, author, ISBN, course..." />
-        <button type="submit" class="btn btn-primary ms-2">Search</button>
-        @if (!string.IsNullOrEmpty(searchTerm))
-        {
-            <a asp-controller="Listings" asp-action="Browse" class="btn btn-outline-secondary ms-2">Clear</a>
-        }
+    <form asp-controller="Listings" asp-action="Browse" method="get" class="vl-card p-3 mb-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small">Search</label>
+                <input type="text" name="q" value="@q.SearchTerm" class="form-control" placeholder="Title, author, ISBN, course..." />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Category</label>
+                <select name="categoryId" class="form-select">
+                    <option value="">All Categories</option>
+                    @foreach (var category in Model.Categories)
+                    {
+                        <option value="@category.Id" selected="@(q.CategoryId == category.Id)">@category.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Condition</label>
+                <select name="condition" class="form-select">
+                    <option value="">Any Condition</option>
+                    @foreach (var c in Enum.GetValues<VarsityLoop.Models.Entities.ListingCondition>())
+                    {
+                        <option value="@c" selected="@(q.Condition == c)">@c</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-1">
+                <label class="form-label small">Min R</label>
+                <input type="number" name="minPrice" value="@q.MinPrice" min="0" class="form-control" />
+            </div>
+            <div class="col-md-1">
+                <label class="form-label small">Max R</label>
+                <input type="number" name="maxPrice" value="@q.MaxPrice" min="0" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Sort</label>
+                <select name="sort" class="form-select">
+                    @foreach (var s in Enum.GetValues<VarsityLoop.Models.ViewModels.Listings.ListingSortOption>())
+                    {
+                        <option value="@s" selected="@(q.Sort == s)">@s</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100">Go</button>
+            </div>
+        </div>
     </form>
 
-    @if (Model.Count == 0)
+    @if (Model.Result.Items.Count == 0)
     {
         <div class="vl-card vl-empty-state">
-            <h5>@(string.IsNullOrEmpty(searchTerm) ? "No listings yet" : $"No results for \"{searchTerm}\"")</h5>
-            <p class="mb-0">@(string.IsNullOrEmpty(searchTerm) ? "Be the first to list a textbook." : "Try a different search term.")</p>
+            <h5>No listings match your filters</h5>
+            <p class="mb-0">Try widening your search or clearing a filter.</p>
         </div>
     }
     else
     {
+        <p class="text-muted small mb-3">@Model.Result.TotalCount result@(Model.Result.TotalCount == 1 ? "" : "s")</p>
+
         <div class="row g-4">
-            @foreach (var listing in Model)
+            @foreach (var listing in Model.Result.Items)
             {
                 <div class="col-sm-6 col-md-4 col-lg-3">
                     <partial name="_ListingCard" model="listing" />
@@ -38,11 +79,23 @@
             }
         </div>
 
-        @if (!string.IsNullOrEmpty(nextPageToken))
+        @if (Model.Result.TotalPages > 1)
         {
-            <div class="text-center mt-4">
-                <a asp-controller="Listings" asp-action="Browse" asp-route-pageToken="@nextPageToken" class="btn btn-outline-primary">Load More</a>
-            </div>
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    @for (var p = 1; p <= Model.Result.TotalPages; p++)
+                    {
+                        <li class="page-item @(p == Model.Result.Page ? "active" : "")">
+                            <a class="page-link"
+                               asp-controller="Listings" asp-action="Browse"
+                               asp-route-q="@q.SearchTerm" asp-route-categoryId="@q.CategoryId"
+                               asp-route-minPrice="@q.MinPrice" asp-route-maxPrice="@q.MaxPrice"
+                               asp-route-condition="@q.Condition" asp-route-sort="@q.Sort"
+                               asp-route-page="@p">@p</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
         }
     }
 </div>

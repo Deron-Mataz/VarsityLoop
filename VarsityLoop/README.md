@@ -10,11 +10,11 @@ This solution is being built in phases. **Phase 1 (Foundation) is complete.**
 - [x] Phase 2 — Firebase Authentication (register/login/logout/forgot-password/email verification), Firestore-driven RBAC, cookie session auth
 - [x] Phase 3 — Site Settings CMS + dynamic branding
 - [x] Phase 4 — Listings core (Books MVP), image upload
-- [ ] Phase 5 — Search, filters, pagination, categories, homepage wiring
+- [x] Phase 5 — Search, filters, pagination, categories, homepage wiring
 - [ ] Phase 6 — Admin panel (users, listings, reports, activity logs, roles)
 - [ ] Phase 7 — Seller profiles, favorites/wishlist, Accommodation/Electronics/Services placeholders
 
-Later features will be built directly on top of what's here
+Later phases will build directly on top of what's here — nothing below needs to be redone.
 
 ## Setup (Visual Studio 2022)
 
@@ -39,6 +39,10 @@ Later features will be built directly on top of what's here
 7. **Firebase Storage public read rules**: logos/favicons (Site Settings) and listing photos (Phase 4) need to be publicly viewable. In Firebase Console → Storage → Rules, paste `storage.rules` from the repo root and click **Publish** (write access stays server-only, since uploads always go through this app's service account, never the browser directly).
 
 8. **Firestore composite indexes**: Phase 4's listing queries (browse-by-status, search, "my listings") each filter on two fields and sort by a third, which Firestore requires a composite index for. The **first time** each query runs, it throws an error containing a direct "create this index" link — click it, wait ~1-2 minutes for the index to build, then retry. This only needs to happen once per query shape (Browse, MyListings), not per listing.
+
+9. **Create at least one category before listing anything**: go to Admin → Categories → New Category. Listings require a category to be selected, and the dropdown is empty until one exists.
+
+> **Note on the index requirement above**: Phase 5 changed how Browse/filtering works internally — sorting now happens in the app rather than as a Firestore `orderBy`, which means the *original* Browse query from Phase 4 no longer needs a composite index at all. If you already created that index per step 8, it's now unused but harmless; if you're setting this up fresh, you likely won't hit that error for Browse/My Listings anymore. This trade-off (documented in `IListingRepository`) is fine for an MVP-sized catalogue — a large one would want to move filtering back into Firestore query clauses or a dedicated search index.
 
 ## Architecture notes
 

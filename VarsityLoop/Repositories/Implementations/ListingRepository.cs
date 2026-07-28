@@ -1,5 +1,4 @@
 using Google.Cloud.Firestore;
-using VarsityLoop.Models.Common;
 using VarsityLoop.Models.Entities;
 using VarsityLoop.Repositories.Interfaces;
 
@@ -15,72 +14,35 @@ namespace VarsityLoop.Repositories.Implementations
             _db = db;
         }
 
-        public async Task<PagedResult<Listing>> GetActivePagedAsync(int pageSize, string? pageToken = null)
+        public async Task<List<Listing>> GetAllActiveAsync()
         {
-            Query query = _db.Collection(CollectionName)
-                .WhereEqualTo("isDeleted", false)
-                .WhereEqualTo("status", ListingStatus.Active.ToString())
-                .OrderByDescending("createdAt")
-                .Limit(pageSize + 1);
-
-            if (!string.IsNullOrEmpty(pageToken))
-            {
-                var cursorDoc = await _db.Collection(CollectionName).Document(pageToken).GetSnapshotAsync();
-                if (cursorDoc.Exists)
-                {
-                    query = query.StartAfter(cursorDoc);
-                }
-            }
-
-            var snapshot = await query.GetSnapshotAsync();
-            var docs = snapshot.Documents.ToList();
-            var hasMore = docs.Count > pageSize;
-            var pageDocs = hasMore ? docs.Take(pageSize).ToList() : docs;
-
-            return new PagedResult<Listing>
-            {
-                Items = pageDocs.Select(d => d.ConvertTo<Listing>()).ToList(),
-                HasMore = hasMore,
-                PageSize = pageSize,
-                NextPageToken = hasMore ? pageDocs.Last().Id : null
-            };
-        }
-
-        public async Task<List<Listing>> GetBySellerAsync(string sellerId)
-        {
-            var query = _db.Collection(CollectionName)
-                .WhereEqualTo("sellerId", sellerId)
-                .WhereEqualTo("isDeleted", false)
-                .OrderByDescending("createdAt");
-
-            var snapshot = await query.GetSnapshotAsync();
-            return snapshot.Documents.Select(d => d.ConvertTo<Listing>()).ToList();
-        }
-
-        public async Task<List<Listing>> SearchAsync(string searchTerm)
-        {
-            // Firestore has no native full-text search. For MVP scale, pull active
-            // listings and filter server-side in memory across the searchable
-            // fields; if the catalogue grows large this should move to a
-            // dedicated search index (e.g. Algolia/Typesense) - see Phase 5.
+            // Two equality filters, no orderBy - Firestore covers this with its
+            // automatic single-field indexes (no composite index needed).
+            // Sorting is done by the caller/service layer instead.
             var query = _db.Collection(CollectionName)
                 .WhereEqualTo("isDeleted", false)
                 .WhereEqualTo("status", ListingStatus.Active.ToString());
 
             var snapshot = await query.GetSnapshotAsync();
-            var all = snapshot.Documents.Select(d => d.ConvertTo<Listing>()).ToList();
+            return snapshot.Documents
+                .Select(d => d.ConvertTo<Listing>())
+                .OrderByDescending(l => l.CreatedAt)
+                .ToList();
+        }
 
-            var term = searchTerm.Trim().ToLowerInvariant();
+        public async Task<List<Listing>> GetBySellerAsync(string sellerId)
+        {
+            // Same reasoning as GetAllActiveAsync - equality filters only, sort
+            // happens after the fetch so no composite index is required.
+            var query = _db.Collection(CollectionName)
+                .WhereEqualTo("sellerId", sellerId)
+                .WhereEqualTo("isDeleted", false);
 
-            return all.Where(l =>
-                l.Title.ToLowerInvariant().Contains(term) ||
-                (l.Author?.ToLowerInvariant().Contains(term) ?? false) ||
-                (l.Isbn?.ToLowerInvariant().Contains(term) ?? false) ||
-                (l.Course?.ToLowerInvariant().Contains(term) ?? false) ||
-                (l.Faculty?.ToLowerInvariant().Contains(term) ?? false) ||
-                l.University.ToLowerInvariant().Contains(term) ||
-                l.SellerName.ToLowerInvariant().Contains(term)
-            ).ToList();
+            var snapshot = await query.GetSnapshotAsync();
+            return snapshot.Documents
+                .Select(d => d.ConvertTo<Listing>())
+                .OrderByDescending(l => l.CreatedAt)
+                .ToList();
         }
 
         public async Task IncrementViewsAsync(string listingId)

@@ -89,6 +89,9 @@ namespace VarsityLoop.Extensions
 
             services.AddScoped<IListingRepository, ListingRepository>();
 
+            services.AddScoped<IFirestoreRepository<Category>>(sp =>
+                new FirestoreRepository<Category>(sp.GetRequiredService<FirestoreDb>(), "Categories"));
+
             // Future repositories are registered the same generic way, e.g.:
             // services.AddScoped<IFirestoreRepository<Listing>>(sp =>
             //     new FirestoreRepository<Listing>(sp.GetRequiredService<FirestoreDb>(), "Listings"));
@@ -115,6 +118,7 @@ namespace VarsityLoop.Extensions
         public static IServiceCollection AddListingServices(this IServiceCollection services)
         {
             services.AddScoped<IListingService, ListingService>();
+            services.AddScoped<ICategoryService, CategoryService>();
             return services;
         }
 

@@ -8,6 +8,10 @@ namespace VarsityLoop.Models.ViewModels.Listings
     {
         public string? Id { get; set; }
 
+        [Required(ErrorMessage = "Please choose a category.")]
+        [Display(Name = "Category")]
+        public string CategoryId { get; set; } = string.Empty;
+
         [Required, StringLength(150)]
         public string Title { get; set; } = string.Empty;
 

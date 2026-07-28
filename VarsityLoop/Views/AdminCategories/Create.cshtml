@@ -1,0 +1,36 @@
+@model VarsityLoop.Models.ViewModels.Admin.CategoryViewModel
+@{
+    ViewData["Title"] = "New Category";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h1 class="h3 mb-4">New Category</h1>
+
+            <form asp-controller="AdminCategories" asp-action="Create" method="post" novalidate>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="mb-3">
+                    <label asp-for="Name" class="form-label"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="invalid-feedback d-block small"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Description" class="form-label"></label>
+                    <textarea asp-for="Description" class="form-control" rows="2"></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="DisplayOrder" class="form-label"></label>
+                    <input asp-for="DisplayOrder" type="number" class="form-control" style="max-width: 120px;" />
+                    <p class="text-muted small mt-1 mb-0">Lower numbers appear first.</p>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Create Category</button>
+                <a asp-controller="AdminCategories" asp-action="Index" class="btn btn-outline-secondary">Cancel</a>
+            </form>
+        </div>
+    </div>
+</div>

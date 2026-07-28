@@ -2,6 +2,14 @@
 
 <input type="hidden" asp-for="Id" />
 
+<div class="mb-3">
+    <label asp-for="CategoryId" class="form-label"></label>
+    <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.Categories">
+        <option value="">Select a category...</option>
+    </select>
+    <span asp-validation-for="CategoryId" class="invalid-feedback d-block small"></span>
+</div>
+
 @if (Model.ExistingImageUrls.Any())
 {
     <div class="mb-3">

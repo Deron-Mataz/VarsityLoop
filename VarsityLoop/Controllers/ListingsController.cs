@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using VarsityLoop.Models.Entities;
 using VarsityLoop.Models.ViewModels.Listings;
 using VarsityLoop.Repositories.Interfaces;
@@ -10,14 +11,14 @@ namespace VarsityLoop.Controllers
 {
     public class ListingsController : Controller
     {
-        private const int PageSize = 12;
-
         private readonly IListingService _listingService;
+        private readonly ICategoryService _categoryService;
         private readonly IUserRepository _userRepository;
 
-        public ListingsController(IListingService listingService, IUserRepository userRepository)
+        public ListingsController(IListingService listingService, ICategoryService categoryService, IUserRepository userRepository)
         {
             _listingService = listingService;
+            _categoryService = categoryService;
             _userRepository = userRepository;
         }
 
@@ -25,21 +26,33 @@ namespace VarsityLoop.Controllers
         private bool CurrentUserIsModerator => User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.SuperAdmin);
 
         [HttpGet]
-        public async Task<IActionResult> Browse(string? q, string? pageToken)
+        public async Task<IActionResult> Browse(string? q, string? categoryId, double? minPrice, double? maxPrice,
+            ListingCondition? condition, ListingSortOption sort = ListingSortOption.Newest, int page = 1)
         {
             ViewData["Title"] = "Textbooks";
-            ViewData["SearchTerm"] = q;
 
-            if (!string.IsNullOrWhiteSpace(q))
+            var query = new ListingBrowseQuery
             {
-                var searchResults = await _listingService.SearchAsync(q);
-                ViewData["NextPageToken"] = null;
-                return View(searchResults);
-            }
+                SearchTerm = q,
+                CategoryId = categoryId,
+                MinPrice = minPrice,
+                MaxPrice = maxPrice,
+                Condition = condition,
+                Sort = sort,
+                Page = page
+            };
 
-            var paged = await _listingService.BrowseAsync(PageSize, pageToken);
-            ViewData["NextPageToken"] = paged.NextPageToken;
-            return View(paged.Items);
+            var result = await _listingService.BrowseAsync(query);
+            var categories = await _categoryService.GetAllAsync();
+
+            var model = new ListingBrowseViewModel
+            {
+                Result = result,
+                Query = query,
+                Categories = categories
+            };
+
+            return View(model);
         }
 
         [HttpGet]
@@ -75,6 +88,7 @@ namespace VarsityLoop.Controllers
             var currentUser = await _userRepository.GetByFirebaseUidAsync(CurrentUserId!);
             if (currentUser != null) model.University = currentUser.University;
 
+            await PopulateCategoriesAsync();
             return View(model);
         }
 
@@ -85,7 +99,11 @@ namespace VarsityLoop.Controllers
         {
             ViewData["Title"] = "Create Listing";
 
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+            {
+                await PopulateCategoriesAsync();
+                return View(model);
+            }
 
             var currentUser = await _userRepository.GetByFirebaseUidAsync(CurrentUserId!);
             if (currentUser == null) return RedirectToAction("Login", "Account");
@@ -95,6 +113,7 @@ namespace VarsityLoop.Controllers
             if (!result.Success)
             {
                 ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Couldn't create listing.");
+                await PopulateCategoriesAsync();
                 return View(model);
             }
 
@@ -116,6 +135,7 @@ namespace VarsityLoop.Controllers
             var model = new ListingFormViewModel
             {
                 Id = listing.Id,
+                CategoryId = listing.CategoryId,
                 Title = listing.Title,
                 Description = listing.Description,
                 Price = listing.Price,
@@ -129,6 +149,7 @@ namespace VarsityLoop.Controllers
                 ExistingImageUrls = listing.ImageUrls
             };
 
+            await PopulateCategoriesAsync();
             return View(model);
         }
 
@@ -139,13 +160,18 @@ namespace VarsityLoop.Controllers
         {
             ViewData["Title"] = "Edit Listing";
 
-            if (!ModelState.IsValid) return View(model);
+            if (!ModelState.IsValid)
+            {
+                await PopulateCategoriesAsync();
+                return View(model);
+            }
 
             var result = await _listingService.UpdateAsync(model, CurrentUserId!, CurrentUserIsModerator);
 
             if (!result.Success)
             {
                 ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Couldn't update listing.");
+                await PopulateCategoriesAsync();
                 return View(model);
             }
 
@@ -188,6 +214,12 @@ namespace VarsityLoop.Controllers
             ViewData["Title"] = "My Listings";
             var listings = await _listingService.GetMyListingsAsync(CurrentUserId!);
             return View(listings);
+        }
+
+        private async Task PopulateCategoriesAsync()
+        {
+            var categories = await _categoryService.GetAllAsync();
+            ViewBag.Categories = new SelectList(categories, "Id", "Name");
         }
     }
 }

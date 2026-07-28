@@ -15,18 +15,76 @@ namespace VarsityLoop.Services.Implementations
 
         private readonly IListingRepository _listingRepository;
         private readonly IStorageService _storageService;
+        private readonly ICategoryService _categoryService;
 
-        public ListingService(IListingRepository listingRepository, IStorageService storageService)
+        public ListingService(IListingRepository listingRepository, IStorageService storageService, ICategoryService categoryService)
         {
             _listingRepository = listingRepository;
             _storageService = storageService;
+            _categoryService = categoryService;
         }
 
-        public Task<PagedResult<Listing>> BrowseAsync(int pageSize, string? pageToken = null)
-            => _listingRepository.GetActivePagedAsync(pageSize, pageToken);
+        public async Task<ListingBrowseResult> BrowseAsync(ListingBrowseQuery query)
+        {
+            var all = await _listingRepository.GetAllActiveAsync();
 
-        public Task<List<Listing>> SearchAsync(string searchTerm)
-            => _listingRepository.SearchAsync(searchTerm);
+            IEnumerable<Listing> filtered = all;
+
+            if (!string.IsNullOrWhiteSpace(query.SearchTerm))
+            {
+                var term = query.SearchTerm.Trim().ToLowerInvariant();
+                filtered = filtered.Where(l =>
+                    l.Title.ToLowerInvariant().Contains(term) ||
+                    (l.Author?.ToLowerInvariant().Contains(term) ?? false) ||
+                    (l.Isbn?.ToLowerInvariant().Contains(term) ?? false) ||
+                    (l.Course?.ToLowerInvariant().Contains(term) ?? false) ||
+                    (l.Faculty?.ToLowerInvariant().Contains(term) ?? false) ||
+                    l.University.ToLowerInvariant().Contains(term) ||
+                    l.SellerName.ToLowerInvariant().Contains(term));
+            }
+
+            if (!string.IsNullOrWhiteSpace(query.CategoryId))
+            {
+                filtered = filtered.Where(l => l.CategoryId == query.CategoryId);
+            }
+
+            if (query.MinPrice.HasValue)
+            {
+                filtered = filtered.Where(l => l.Price >= query.MinPrice.Value);
+            }
+
+            if (query.MaxPrice.HasValue)
+            {
+                filtered = filtered.Where(l => l.Price <= query.MaxPrice.Value);
+            }
+
+            if (query.Condition.HasValue)
+            {
+                filtered = filtered.Where(l => l.Condition == query.Condition.Value.ToString());
+            }
+
+            filtered = query.Sort switch
+            {
+                ListingSortOption.Oldest => filtered.OrderBy(l => l.CreatedAt),
+                ListingSortOption.PriceLowToHigh => filtered.OrderBy(l => l.Price),
+                ListingSortOption.PriceHighToLow => filtered.OrderByDescending(l => l.Price),
+                _ => filtered.OrderByDescending(l => l.CreatedAt)
+            };
+
+            var filteredList = filtered.ToList();
+            var pageSize = query.PageSize <= 0 ? 12 : query.PageSize;
+            var page = query.Page <= 0 ? 1 : query.Page;
+
+            var pageItems = filteredList.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            return new ListingBrowseResult
+            {
+                Items = pageItems,
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = filteredList.Count
+            };
+        }
 
         public async Task<Listing?> GetDetailsAsync(string id, bool countView)
         {
@@ -59,6 +117,12 @@ namespace VarsityLoop.Services.Implementations
                 return OperationResult<string>.Fail(validationError);
             }
 
+            var category = await _categoryService.GetByIdAsync(model.CategoryId);
+            if (category == null)
+            {
+                return OperationResult<string>.Fail("Please choose a valid category.");
+            }
+
             // Generate the document Id up front so uploaded images can live under
             // a folder named for the listing they belong to (listings/{id}/...).
             var listingId = Guid.NewGuid().ToString("N");
@@ -67,7 +131,8 @@ namespace VarsityLoop.Services.Implementations
             var listing = new Listing
             {
                 Id = listingId,
-                Category = "Textbooks",
+                CategoryId = category.Id,
+                CategoryName = category.Name,
                 Title = model.Title.Trim(),
                 Description = model.Description.Trim(),
                 Price = model.Price,
@@ -107,6 +172,12 @@ namespace VarsityLoop.Services.Implementations
                 return OperationResult.Fail("You don't have permission to edit this listing.");
             }
 
+            var category = await _categoryService.GetByIdAsync(model.CategoryId);
+            if (category == null)
+            {
+                return OperationResult.Fail("Please choose a valid category.");
+            }
+
             var newImageFiles = model.ImageFiles?.Where(f => f.Length > 0).ToList() ?? new List<IFormFile>();
             var totalImageCount = model.ExistingImageUrls.Count + newImageFiles.Count;
 
@@ -133,6 +204,8 @@ namespace VarsityLoop.Services.Implementations
                 ? await UploadImagesAsync(newImageFiles, listing.Id)
                 : new List<string>();
 
+            listing.CategoryId = category.Id;
+            listing.CategoryName = category.Name;
             listing.Title = model.Title.Trim();
             listing.Description = model.Description.Trim();
             listing.Price = model.Price;
@@ -174,9 +247,6 @@ namespace VarsityLoop.Services.Implementations
                 return OperationResult.Fail("You don't have permission to change this listing.");
             }
 
-            // Sellers can only toggle between Active/Paused - Suspended/Removed are
-            // moderator-only states set from the Admin Panel (Phase 6), so this never
-            // accidentally reactivates a listing an admin suspended.
             if (listing.Status != nameof(ListingStatus.Active) && listing.Status != nameof(ListingStatus.Paused))
             {
                 return OperationResult.Fail("This listing can't be changed right now. Contact support.");
