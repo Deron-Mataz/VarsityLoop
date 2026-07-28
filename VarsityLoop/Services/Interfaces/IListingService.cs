@@ -14,5 +14,11 @@ namespace VarsityLoop.Services.Interfaces
         Task<OperationResult> UpdateAsync(ListingFormViewModel model, string currentUserId, bool currentUserIsModerator);
         Task<OperationResult> DeleteAsync(string id, string currentUserId, bool currentUserIsModerator);
         Task<OperationResult> SetPausedAsync(string id, bool paused, string currentUserId, bool currentUserIsModerator);
+
+        // --- Admin moderation (Phase 6) ---
+        Task<List<Listing>> GetAllForAdminAsync(string? searchTerm, string? status);
+        Task<OperationResult> SuspendAsync(string id, string actorId, string actorName);
+        Task<OperationResult> RestoreAsync(string id, string actorId, string actorName);
+        Task<OperationResult> RemoveAsync(string id, string actorId, string actorName);
     }
 }

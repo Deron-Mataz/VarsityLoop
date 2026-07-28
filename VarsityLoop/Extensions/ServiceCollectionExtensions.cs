@@ -92,6 +92,12 @@ namespace VarsityLoop.Extensions
             services.AddScoped<IFirestoreRepository<Category>>(sp =>
                 new FirestoreRepository<Category>(sp.GetRequiredService<FirestoreDb>(), "Categories"));
 
+            services.AddScoped<IFirestoreRepository<Report>>(sp =>
+                new FirestoreRepository<Report>(sp.GetRequiredService<FirestoreDb>(), "Reports"));
+
+            services.AddScoped<IFirestoreRepository<ActivityLog>>(sp =>
+                new FirestoreRepository<ActivityLog>(sp.GetRequiredService<FirestoreDb>(), "ActivityLogs"));
+
             // Future repositories are registered the same generic way, e.g.:
             // services.AddScoped<IFirestoreRepository<Listing>>(sp =>
             //     new FirestoreRepository<Listing>(sp.GetRequiredService<FirestoreDb>(), "Listings"));
@@ -119,6 +125,20 @@ namespace VarsityLoop.Extensions
         {
             services.AddScoped<IListingService, ListingService>();
             services.AddScoped<ICategoryService, CategoryService>();
+            return services;
+        }
+
+        /// <summary>
+        /// Registers the Phase 6 Admin Panel services: activity logging (used
+        /// by all of the below), report handling, and admin-side user
+        /// management. Must be called after AddListingServices/AddCmsServices
+        /// since it doesn't redeclare their dependencies.
+        /// </summary>
+        public static IServiceCollection AddAdminServices(this IServiceCollection services)
+        {
+            services.AddScoped<IActivityLogService, ActivityLogService>();
+            services.AddScoped<IReportService, ReportService>();
+            services.AddScoped<IAdminUserService, AdminUserService>();
             return services;
         }
 

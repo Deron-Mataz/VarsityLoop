@@ -1,0 +1,105 @@
+@model List<VarsityLoop.Models.Entities.ApplicationUser>
+@{
+    ViewData["Title"] = "Users";
+    var searchTerm = ViewData["SearchTerm"] as string;
+    var currentUserIsSuperAdmin = ViewData["CurrentUserIsSuperAdmin"] as bool? ?? false;
+    var roleOptions = new[] { "User", "Moderator", "Admin", "SuperAdmin" };
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Users</h1>
+        <a asp-controller="Admin" asp-action="Index" class="btn btn-outline-secondary btn-sm">Back to Dashboard</a>
+    </div>
+
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger">@TempData["ErrorMessage"]</div>
+    }
+
+    <form asp-controller="AdminUsers" asp-action="Index" method="get" class="vl-card p-2 d-flex mb-4" style="max-width: 480px;">
+        <input type="text" name="q" value="@searchTerm" class="form-control border-0" placeholder="Search name, email, university..." />
+        <button type="submit" class="btn btn-primary ms-2">Search</button>
+    </form>
+
+    <div class="vl-card">
+        <table class="table mb-0 align-middle">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>University</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model)
+                {
+                    <tr>
+                        <td class="fw-semibold">@user.FullName</td>
+                        <td>@user.Email</td>
+                        <td>@user.University</td>
+                        <td style="min-width: 160px;">
+                            @if (currentUserIsSuperAdmin || user.Role != "SuperAdmin")
+                            {
+                                <form asp-controller="AdminUsers" asp-action="SetRole" asp-route-id="@user.Id" method="post" class="d-flex gap-1">
+                                    <select name="role" class="form-select form-select-sm">
+                                        @foreach (var role in roleOptions)
+                                        {
+                                            @if (role != "SuperAdmin" || currentUserIsSuperAdmin)
+                                            {
+                                                <option value="@role" selected="@(user.Role == role)">@role</option>
+                                            }
+                                        }
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Set</button>
+                                </form>
+                            }
+                            else
+                            {
+                                <span class="badge bg-primary">SuperAdmin</span>
+                            }
+                        </td>
+                        <td>
+                            @if (user.AccountStatus == "Active")
+                            {
+                                <span class="badge badge-green">Active</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-secondary">@user.AccountStatus</span>
+                            }
+                        </td>
+                        <td class="small text-muted">@user.CreatedAt.ToDateTime().ToString("MMM d, yyyy")</td>
+                        <td class="text-end">
+                            <div class="d-flex gap-2 justify-content-end">
+                                @if (user.AccountStatus == "Active")
+                                {
+                                    <form asp-controller="AdminUsers" asp-action="Deactivate" asp-route-id="@user.Id" method="post">
+                                        <button type="submit" class="btn btn-sm btn-outline-secondary">Deactivate</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-controller="AdminUsers" asp-action="Reactivate" asp-route-id="@user.Id" method="post">
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">Reactivate</button>
+                                    </form>
+                                }
+                                <form asp-controller="AdminUsers" asp-action="Delete" asp-route-id="@user.Id" method="post" onsubmit="return confirm('Delete this account?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

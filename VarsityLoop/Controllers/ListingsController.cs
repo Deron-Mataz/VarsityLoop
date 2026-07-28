@@ -13,12 +13,14 @@ namespace VarsityLoop.Controllers
     {
         private readonly IListingService _listingService;
         private readonly ICategoryService _categoryService;
+        private readonly IReportService _reportService;
         private readonly IUserRepository _userRepository;
 
-        public ListingsController(IListingService listingService, ICategoryService categoryService, IUserRepository userRepository)
+        public ListingsController(IListingService listingService, ICategoryService categoryService, IReportService reportService, IUserRepository userRepository)
         {
             _listingService = listingService;
             _categoryService = categoryService;
+            _reportService = reportService;
             _userRepository = userRepository;
         }
 
@@ -205,6 +207,26 @@ namespace VarsityLoop.Controllers
         {
             await _listingService.SetPausedAsync(id, false, CurrentUserId!, CurrentUserIsModerator);
             return RedirectToAction(nameof(MyListings));
+        }
+
+        [Authorize]
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Report(string id, string reason)
+        {
+            var listing = await _listingService.GetDetailsAsync(id, countView: false);
+            if (listing == null) return RedirectToAction("NotFound404", "Error");
+
+            var currentUser = await _userRepository.GetByFirebaseUidAsync(CurrentUserId!);
+            if (currentUser == null) return RedirectToAction("Login", "Account");
+
+            var result = await _reportService.CreateAsync(listing.Id, listing.Title, currentUser.Id, currentUser.FullName, reason);
+
+            TempData[result.Success ? "SuccessMessage" : "ErrorMessage"] = result.Success
+                ? "Thanks - we've received your report and will review it."
+                : result.ErrorMessage;
+
+            return RedirectToAction(nameof(Details), new { id });
         }
 
         [Authorize]

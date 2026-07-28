@@ -16,12 +16,18 @@ namespace VarsityLoop.Services.Implementations
         private readonly IListingRepository _listingRepository;
         private readonly IStorageService _storageService;
         private readonly ICategoryService _categoryService;
+        private readonly IActivityLogService _activityLogService;
 
-        public ListingService(IListingRepository listingRepository, IStorageService storageService, ICategoryService categoryService)
+        public ListingService(
+            IListingRepository listingRepository,
+            IStorageService storageService,
+            ICategoryService categoryService,
+            IActivityLogService activityLogService)
         {
             _listingRepository = listingRepository;
             _storageService = storageService;
             _categoryService = categoryService;
+            _activityLogService = activityLogService;
         }
 
         public async Task<ListingBrowseResult> BrowseAsync(ListingBrowseQuery query)
@@ -257,6 +263,75 @@ namespace VarsityLoop.Services.Implementations
                 { "status", (paused ? ListingStatus.Paused : ListingStatus.Active).ToString() }
             });
 
+            return OperationResult.Ok();
+        }
+
+        public async Task<List<Listing>> GetAllForAdminAsync(string? searchTerm, string? status)
+        {
+            // Admins need to see every status (including Suspended/Removed), so this
+            // goes through the base repository's GetAllAsync (non-deleted only) rather
+            // than GetAllActiveAsync, which is scoped to Status == Active for the
+            // public Browse page.
+            var all = await _listingRepository.GetAllAsync();
+
+            IEnumerable<Listing> filtered = all;
+
+            if (!string.IsNullOrWhiteSpace(status))
+            {
+                filtered = filtered.Where(l => l.Status == status);
+            }
+
+            if (!string.IsNullOrWhiteSpace(searchTerm))
+            {
+                var term = searchTerm.Trim().ToLowerInvariant();
+                filtered = filtered.Where(l =>
+                    l.Title.ToLowerInvariant().Contains(term) ||
+                    l.SellerName.ToLowerInvariant().Contains(term) ||
+                    l.University.ToLowerInvariant().Contains(term));
+            }
+
+            return filtered.OrderByDescending(l => l.CreatedAt).ToList();
+        }
+
+        public async Task<OperationResult> SuspendAsync(string id, string actorId, string actorName)
+        {
+            var listing = await _listingRepository.GetByIdAsync(id);
+            if (listing == null) return OperationResult.Fail("Listing not found.");
+
+            await _listingRepository.UpdateFieldsAsync(id, new Dictionary<string, object?>
+            {
+                { "status", ListingStatus.Suspended.ToString() }
+            });
+
+            await _activityLogService.LogAsync(actorId, actorName, "Suspended listing", "Listing", id, listing.Title);
+            return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> RestoreAsync(string id, string actorId, string actorName)
+        {
+            var listing = await _listingRepository.GetByIdAsync(id);
+            if (listing == null) return OperationResult.Fail("Listing not found.");
+
+            await _listingRepository.UpdateFieldsAsync(id, new Dictionary<string, object?>
+            {
+                { "status", ListingStatus.Active.ToString() }
+            });
+
+            await _activityLogService.LogAsync(actorId, actorName, "Restored listing", "Listing", id, listing.Title);
+            return OperationResult.Ok();
+        }
+
+        public async Task<OperationResult> RemoveAsync(string id, string actorId, string actorName)
+        {
+            var listing = await _listingRepository.GetByIdAsync(id);
+            if (listing == null) return OperationResult.Fail("Listing not found.");
+
+            await _listingRepository.UpdateFieldsAsync(id, new Dictionary<string, object?>
+            {
+                { "status", ListingStatus.Removed.ToString() }
+            });
+
+            await _activityLogService.LogAsync(actorId, actorName, "Removed listing", "Listing", id, listing.Title);
             return OperationResult.Ok();
         }
 

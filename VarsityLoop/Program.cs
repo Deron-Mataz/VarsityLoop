@@ -41,6 +41,9 @@ builder.Services.AddCmsServices();
 // Listings core (Phase 4 - Books MVP).
 builder.Services.AddListingServices();
 
+// Admin Panel (Phase 6): activity logging, reports, admin user management.
+builder.Services.AddAdminServices();
+
 // Cookie-based session authentication. The cookie itself only ever carries
 // claims (uid, email, name, role) written at sign-in time from the Firestore
 // user profile - Firebase's own tokens are never stored in the cookie.
