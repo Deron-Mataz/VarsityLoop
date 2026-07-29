@@ -22,17 +22,49 @@ namespace VarsityLoop.Controllers
 
         private readonly ISiteSettingsService _siteSettingsService;
         private readonly IStorageService _storageService;
+        private readonly IAdminUserService _adminUserService;
+        private readonly IListingService _listingService;
+        private readonly ICategoryService _categoryService;
+        private readonly IReportService _reportService;
 
-        public AdminController(ISiteSettingsService siteSettingsService, IStorageService storageService)
+        public AdminController(
+            ISiteSettingsService siteSettingsService,
+            IStorageService storageService,
+            IAdminUserService adminUserService,
+            IListingService listingService,
+            ICategoryService categoryService,
+            IReportService reportService)
         {
             _siteSettingsService = siteSettingsService;
             _storageService = storageService;
+            _adminUserService = adminUserService;
+            _listingService = listingService;
+            _categoryService = categoryService;
+            _reportService = reportService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             ViewData["Title"] = "Admin Dashboard";
-            return View();
+
+            var users = await _adminUserService.GetAllAsync();
+            var listings = await _listingService.GetAllForAdminAsync(null, null);
+            var categories = await _categoryService.GetAllAsync();
+            var reports = await _reportService.GetAllAsync();
+
+            var stats = new AdminDashboardStats
+            {
+                TotalUsers = users.Count,
+                ActiveUsers = users.Count(u => u.AccountStatus == nameof(AccountStatus.Active)),
+                TotalListings = listings.Count,
+                ActiveListings = listings.Count(l => l.Status == nameof(ListingStatus.Active)),
+                PausedListings = listings.Count(l => l.Status == nameof(ListingStatus.Paused)),
+                SuspendedOrRemovedListings = listings.Count(l => l.Status is nameof(ListingStatus.Suspended) or nameof(ListingStatus.Removed)),
+                TotalCategories = categories.Count,
+                PendingReports = reports.Count(r => r.Status == nameof(ReportStatus.Pending))
+            };
+
+            return View(stats);
         }
 
         [HttpGet]

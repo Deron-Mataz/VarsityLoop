@@ -1,44 +1,88 @@
+@model VarsityLoop.Models.ViewModels.Admin.AdminDashboardStats
 @{
     ViewData["Title"] = "Admin Dashboard";
 }
 
 <div class="container py-5">
-    <h1 class="h3 mb-2">Admin Dashboard</h1>
+    <h1 class="h3 mb-1">Admin Dashboard</h1>
     <p class="text-muted mb-4">Signed in as <strong>@User.Identity?.Name</strong> (@User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value)</p>
 
+    <h2 class="h6 text-muted text-uppercase mb-3" style="letter-spacing: 0.03em;">Site Statistics</h2>
+    <div class="row g-3 mb-5">
+        <div class="col-6 col-md-3">
+            <div class="vl-stat-card vl-stat-blue">
+                <div class="vl-stat-value">@Model.TotalUsers</div>
+                <div class="vl-stat-label">Total Users (@Model.ActiveUsers active)</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="vl-stat-card vl-stat-coral">
+                <div class="vl-stat-value">@Model.ActiveListings</div>
+                <div class="vl-stat-label">Active Listings (@Model.TotalListings total)</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="vl-stat-card vl-stat-green">
+                <div class="vl-stat-value">@Model.TotalCategories</div>
+                <div class="vl-stat-label">Categories</div>
+            </div>
+        </div>
+        <div class="col-6 col-md-3">
+            <div class="vl-stat-card vl-stat-gold">
+                <div class="vl-stat-value">@Model.PendingReports</div>
+                <div class="vl-stat-label">Pending Reports</div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.PausedListings > 0 || Model.SuspendedOrRemovedListings > 0)
+    {
+        <p class="text-muted small mb-5">
+            @Model.PausedListings paused listing@(Model.PausedListings == 1 ? "" : "s") ·
+            @Model.SuspendedOrRemovedListings suspended/removed listing@(Model.SuspendedOrRemovedListings == 1 ? "" : "s")
+        </p>
+    }
+
+    <h2 class="h6 text-muted text-uppercase mb-3" style="letter-spacing: 0.03em;">Manage</h2>
     <div class="row g-3">
         <div class="col-md-4">
-            <a asp-controller="AdminUsers" asp-action="Index" class="vl-card p-4 d-block text-decoration-none text-reset h-100">
+            <a asp-controller="AdminUsers" asp-action="Index" class="vl-card vl-card-hover p-4 d-block text-decoration-none text-reset h-100">
+                <div class="vl-icon-tile blue">👥</div>
                 <h5 class="mb-1">Users</h5>
                 <p class="text-muted small mb-0">Search users, assign roles, deactivate or delete accounts.</p>
             </a>
         </div>
         <div class="col-md-4">
-            <a asp-controller="AdminListings" asp-action="Index" class="vl-card p-4 d-block text-decoration-none text-reset h-100">
+            <a asp-controller="AdminListings" asp-action="Index" class="vl-card vl-card-hover p-4 d-block text-decoration-none text-reset h-100">
+                <div class="vl-icon-tile">📦</div>
                 <h5 class="mb-1">Listings</h5>
                 <p class="text-muted small mb-0">Search all listings, suspend, remove, or restore them.</p>
             </a>
         </div>
         <div class="col-md-4">
-            <a asp-controller="AdminCategories" asp-action="Index" class="vl-card p-4 d-block text-decoration-none text-reset h-100">
+            <a asp-controller="AdminCategories" asp-action="Index" class="vl-card vl-card-hover p-4 d-block text-decoration-none text-reset h-100">
+                <div class="vl-icon-tile green">🏷️</div>
                 <h5 class="mb-1">Categories</h5>
                 <p class="text-muted small mb-0">Manage the categories listings can be filed under.</p>
             </a>
         </div>
         <div class="col-md-4">
-            <a asp-controller="AdminReports" asp-action="Index" class="vl-card p-4 d-block text-decoration-none text-reset h-100">
+            <a asp-controller="AdminReports" asp-action="Index" class="vl-card vl-card-hover p-4 d-block text-decoration-none text-reset h-100">
+                <div class="vl-icon-tile" style="background: #fde68a; color: #92610a;">🚩</div>
                 <h5 class="mb-1">Reports</h5>
                 <p class="text-muted small mb-0">Review listings reported by users.</p>
             </a>
         </div>
         <div class="col-md-4">
-            <a asp-controller="AdminActivityLog" asp-action="Index" class="vl-card p-4 d-block text-decoration-none text-reset h-100">
+            <a asp-controller="AdminActivityLog" asp-action="Index" class="vl-card vl-card-hover p-4 d-block text-decoration-none text-reset h-100">
+                <div class="vl-icon-tile" style="background: #e2e8f0; color: #334155;">🕒</div>
                 <h5 class="mb-1">Activity Log</h5>
                 <p class="text-muted small mb-0">Audit trail of every moderation action taken.</p>
             </a>
         </div>
         <div class="col-md-4">
-            <a asp-controller="Admin" asp-action="Settings" class="vl-card p-4 d-block text-decoration-none text-reset h-100">
+            <a asp-controller="Admin" asp-action="Settings" class="vl-card vl-card-hover p-4 d-block text-decoration-none text-reset h-100">
+                <div class="vl-icon-tile" style="background: #ede9fe; color: #6d28d9;">🎨</div>
                 <h5 class="mb-1">Site Settings</h5>
                 <p class="text-muted small mb-0">Branding, homepage copy, footer, social links, maintenance mode.</p>
             </a>

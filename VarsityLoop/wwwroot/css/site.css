@@ -1,59 +1,234 @@
 :root {
+    /* Core CMS-driven colours (Primary/Accent come from Site Settings) */
     --vl-primary-blue: #1d4ed8;
+    --vl-primary-blue-dark: #17399e;
     --vl-white: #ffffff;
-    --vl-light-grey: #f5f6f8;
-    --vl-dark-grey: #33363b;
+    --vl-light-grey: #f6f5f2;
+    --vl-dark-grey: #2f2b26;
     --vl-accent-gold: #d4a017;
     --vl-accent-green: #16a34a;
 
-    --vl-radius: 0.75rem;
-    --vl-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+    /* Fixed "warmth" accents - not CMS-driven, these carry the lively/fun feel */
+    --vl-coral: #ff6b5b;
+    --vl-coral-dark: #e8503f;
+    --vl-cream: #fff7ee;
+    --vl-peach: #ffe8d6;
+
+    --vl-radius: 0.9rem;
+    --vl-radius-lg: 1.25rem;
+    --vl-shadow: 0 2px 14px rgba(47, 43, 38, 0.07);
+    --vl-shadow-lg: 0 10px 30px rgba(47, 43, 38, 0.12);
+
+    --vl-nav-height: 68px;
+}
+
+* {
+    scroll-behavior: smooth;
 }
 
 body {
     background-color: var(--vl-light-grey);
     color: var(--vl-dark-grey);
     font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    padding-top: var(--vl-nav-height);
 }
 
+h1, h2, h3, h4, h5, h6 {
+    letter-spacing: -0.01em;
+}
+
+/* ---------- Navbar ---------- */
 .vl-navbar {
     box-shadow: var(--vl-shadow);
+    height: var(--vl-nav-height);
+    background: var(--vl-white) !important;
 }
 
 .vl-brand {
     color: var(--vl-primary-blue) !important;
     display: flex;
     align-items: center;
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
 }
 
+.vl-navbar .nav-link {
+    font-weight: 600;
+    color: var(--vl-dark-grey) !important;
+    position: relative;
+    padding-bottom: 0.35rem;
+    margin: 0 0.15rem;
+}
+
+.vl-navbar .nav-link::after {
+    content: "";
+    position: absolute;
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0;
+    height: 3px;
+    border-radius: 2px;
+    background: var(--vl-coral);
+    transform: scaleX(0);
+    transition: transform 0.15s ease;
+}
+
+.vl-navbar .nav-link:hover::after {
+    transform: scaleX(1);
+}
+
+.vl-navbar .nav-link.active {
+    color: var(--vl-primary-blue) !important;
+}
+
+.vl-navbar .nav-link.active::after {
+    transform: scaleX(1);
+    background: var(--vl-primary-blue);
+}
+
+/* ---------- Buttons ---------- */
 .vl-btn-primary,
 .btn-primary {
     background-color: var(--vl-primary-blue);
     border-color: var(--vl-primary-blue);
+    font-weight: 600;
+    border-radius: 0.6rem;
 }
 
 .btn-primary:hover {
-    background-color: #1a3fb0;
-    border-color: #1a3fb0;
+    background-color: var(--vl-primary-blue-dark);
+    border-color: var(--vl-primary-blue-dark);
 }
 
+.btn-coral {
+    background-color: var(--vl-coral);
+    border-color: var(--vl-coral);
+    color: #fff;
+    font-weight: 600;
+    border-radius: 0.6rem;
+}
+
+.btn-coral:hover {
+    background-color: var(--vl-coral-dark);
+    border-color: var(--vl-coral-dark);
+    color: #fff;
+}
+
+/* ---------- Cards ---------- */
 .vl-card {
     background: var(--vl-white);
     border-radius: var(--vl-radius);
     box-shadow: var(--vl-shadow);
-    border: 1px solid rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(47, 43, 38, 0.05);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+a.vl-card:hover,
+.vl-card.vl-card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--vl-shadow-lg);
 }
 
 .vl-empty-state {
     text-align: center;
     padding: 4rem 1.5rem;
-    color: #8a8f98;
+    color: #8a8073;
 }
 
+/* Alternating section backgrounds so the page doesn't read as one flat sheet */
+.vl-section-cream {
+    background: var(--vl-cream);
+}
+
+.vl-section-peach {
+    background: var(--vl-peach);
+}
+
+/* ---------- Hero ---------- */
+.vl-hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--vl-primary-blue) 0%, var(--vl-primary-blue-dark) 55%, var(--vl-coral) 130%);
+}
+
+.vl-hero::before,
+.vl-hero::after {
+    content: "";
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.18;
+    background: #fff;
+}
+
+.vl-hero::before {
+    width: 380px;
+    height: 380px;
+    top: -160px;
+    right: -100px;
+}
+
+.vl-hero::after {
+    width: 220px;
+    height: 220px;
+    bottom: -120px;
+    left: -60px;
+    background: var(--vl-accent-gold);
+    opacity: 0.25;
+}
+
+.vl-hero-content {
+    position: relative;
+    z-index: 1;
+}
+
+/* ---------- Icon tiles (how it works, categories) ---------- */
+.vl-icon-tile {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    background: var(--vl-peach);
+    color: var(--vl-coral-dark);
+    margin-bottom: 0.75rem;
+}
+
+.vl-icon-tile.blue {
+    background: #dbe6ff;
+    color: var(--vl-primary-blue);
+}
+
+.vl-icon-tile.green {
+    background: #dcf5e3;
+    color: var(--vl-accent-green);
+}
+
+/* ---------- Footer ---------- */
 .vl-footer {
-    background-color: var(--vl-white) !important;
+    background-color: var(--vl-dark-grey) !important;
+    color: #d9d5cf;
 }
 
+.vl-footer a {
+    color: #d9d5cf;
+}
+
+.vl-footer a:hover {
+    color: #fff;
+}
+
+.vl-footer h6 {
+    color: #fff;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+}
+
+/* ---------- Badges ---------- */
 .badge-gold {
     background-color: var(--vl-accent-gold);
     color: #fff;
@@ -63,3 +238,33 @@ body {
     background-color: var(--vl-accent-green);
     color: #fff;
 }
+
+.badge-coral {
+    background-color: var(--vl-coral);
+    color: #fff;
+}
+
+/* ---------- Admin stat cards ---------- */
+.vl-stat-card {
+    border-radius: var(--vl-radius);
+    padding: 1.25rem 1.5rem;
+    color: #fff;
+    box-shadow: var(--vl-shadow);
+}
+
+.vl-stat-card .vl-stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.vl-stat-card .vl-stat-label {
+    opacity: 0.9;
+    font-size: 0.85rem;
+    margin-top: 0.35rem;
+}
+
+.vl-stat-blue { background: linear-gradient(135deg, var(--vl-primary-blue), var(--vl-primary-blue-dark)); }
+.vl-stat-coral { background: linear-gradient(135deg, var(--vl-coral), var(--vl-coral-dark)); }
+.vl-stat-green { background: linear-gradient(135deg, #22c55e, #15803d); }
+.vl-stat-gold { background: linear-gradient(135deg, #eab308, #b8860b); }

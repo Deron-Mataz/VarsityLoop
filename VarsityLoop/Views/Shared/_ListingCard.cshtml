@@ -1,6 +1,6 @@
 @model VarsityLoop.Models.Entities.Listing
 
-<div class="vl-card h-100 d-flex flex-column overflow-hidden">
+<div class="vl-card vl-card-hover h-100 d-flex flex-column overflow-hidden">
     <a asp-controller="Listings" asp-action="Details" asp-route-id="@Model.Id" class="text-reset text-decoration-none">
         <div style="aspect-ratio: 4/3; background: #eef0f3; overflow: hidden;">
             @if (Model.ImageUrls.Count > 0)

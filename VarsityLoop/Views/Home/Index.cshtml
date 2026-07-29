@@ -2,8 +2,9 @@
     ViewData["Title"] = "Home";
 }
 
-<section class="py-5" style="background: linear-gradient(135deg, var(--vl-primary-blue), #163a9e);">
-    <div class="container py-4 text-center text-white">
+<section class="vl-hero py-5">
+    <div class="container py-5 text-center text-white vl-hero-content">
+        <span class="badge badge-coral mb-3 px-3 py-2" style="font-size: 0.8rem;">📚 Built for students, by students</span>
         <h1 class="fw-bold display-5">@(ViewData["HeroHeading"] ?? "Buy, sell, and swap with students at your university")</h1>
         <p class="lead mb-4 opacity-75">
             @(ViewData["HeroDescription"] ?? "Textbooks first, everything student life needs next.")
@@ -11,7 +12,7 @@
 
         <form class="mx-auto vl-card p-2 d-flex" style="max-width: 640px;" asp-controller="Listings" asp-action="Browse" method="get">
             <input type="text" name="q" class="form-control border-0" placeholder="Search textbooks, courses, ISBNs..." />
-            <button type="submit" class="btn btn-primary ms-2">Search</button>
+            <button type="submit" class="btn btn-coral ms-2">Search</button>
         </form>
     </div>
 </section>
@@ -20,7 +21,7 @@
 
     <section class="mb-5">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h4 mb-0">Featured Listings</h2>
+            <h2 class="h4 mb-0">🔥 Featured Listings</h2>
             <a asp-controller="Listings" asp-action="Browse" class="small">View all &rarr;</a>
         </div>
 
@@ -49,7 +50,7 @@
 
     <section class="mb-5">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h4 mb-0">Newest Listings</h2>
+            <h2 class="h4 mb-0">🆕 Newest Listings</h2>
             <a asp-controller="Listings" asp-action="Browse" class="small">View all &rarr;</a>
         </div>
 
@@ -75,11 +76,14 @@
             </div>
         }
     </section>
+</div>
 
-    <section class="mb-5">
-        <h2 class="h4 mb-3">Browse Categories</h2>
+<section class="vl-section-cream py-5">
+    <div class="container">
+        <h2 class="h4 mb-4">Browse Categories</h2>
         @{
             var categories = ViewData["Categories"] as List<VarsityLoop.Models.Entities.Category> ?? new();
+            var categoryIcons = new[] { "📘", "🎒", "💻", "🏠", "🛋️", "🎓", "✏️", "🔬" };
         }
         @if (categories.Count == 0)
         {
@@ -91,43 +95,54 @@
         else
         {
             <div class="row g-3">
-                @foreach (var category in categories)
+                @for (var i = 0; i < categories.Count; i++)
                 {
                     <div class="col-6 col-md-3">
-                        <a asp-controller="Listings" asp-action="Browse" asp-route-categoryId="@category.Id"
-                           class="vl-card p-3 d-block text-center text-decoration-none text-reset h-100">
-                            <span class="fw-semibold">@category.Name</span>
+                        <a asp-controller="Listings" asp-action="Browse" asp-route-categoryId="@categories[i].Id"
+                           class="vl-card vl-card-hover p-3 d-block text-center text-decoration-none text-reset h-100">
+                            <div class="fs-3 mb-1">@categoryIcons[i % categoryIcons.Length]</div>
+                            <span class="fw-semibold">@categories[i].Name</span>
                         </a>
                     </div>
                 }
             </div>
         }
-    </section>
+    </div>
+</section>
 
-    <section class="row g-4 mb-5">
-        <div class="col-md-4">
-            <div class="vl-card p-4 h-100">
-                <h5>1. Create a listing</h5>
-                <p class="text-muted mb-0">Post your textbook in minutes with photos and pricing.</p>
+<div class="container py-5">
+    <section class="mb-5">
+        <h2 class="h4 mb-4 text-center">How Varsity Loop Works</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="vl-card p-4 h-100">
+                    <div class="vl-icon-tile blue">📝</div>
+                    <h5>1. Create a listing</h5>
+                    <p class="text-muted mb-0">Post your textbook in minutes with photos and pricing.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="vl-card p-4 h-100">
+                    <div class="vl-icon-tile">🤝</div>
+                    <h5>2. Connect with buyers</h5>
+                    <p class="text-muted mb-0">Students at your university browse and reach out.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="vl-card p-4 h-100">
+                    <div class="vl-icon-tile green">✅</div>
+                    <h5>3. Meet up and trade</h5>
+                    <p class="text-muted mb-0">Arrange a safe, on-campus handoff.</p>
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="vl-card p-4 h-100">
-                <h5>2. Connect with buyers</h5>
-                <p class="text-muted mb-0">Students at your university browse and reach out.</p>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="vl-card p-4 h-100">
-                <h5>3. Meet up and trade</h5>
-                <p class="text-muted mb-0">Arrange a safe, on-campus handoff.</p>
-            </div>
-        </div>
     </section>
-
-    <section class="text-center py-5 vl-card">
-        <h3 class="mb-3">Ready to save on textbooks?</h3>
-        <a class="btn btn-primary btn-lg" asp-controller="Account" asp-action="Register">Get Started</a>
-    </section>
-
 </div>
+
+<section class="vl-section-peach py-5">
+    <div class="container text-center">
+        <h3 class="mb-3">Ready to save on textbooks?</h3>
+        <p class="text-muted mb-4">Join students already buying and selling on Varsity Loop.</p>
+        <a class="btn btn-coral btn-lg" asp-controller="Account" asp-action="Register">Get Started</a>
+    </div>
+</section>

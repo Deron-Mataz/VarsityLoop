@@ -31,8 +31,12 @@
     <link rel="icon" href="@(ViewData["FaviconUrl"] ?? "/favicon.ico")" />
 </head>
 <body>
+    @{
+        var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+        string NavClass(string controller) => currentController == controller ? "nav-link active" : "nav-link";
+    }
     <header>
-        <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom sticky-top vl-navbar">
+        <nav class="navbar navbar-expand-lg navbar-light fixed-top vl-navbar">
             <div class="container">
                 <a class="navbar-brand fw-bold vl-brand" asp-controller="Home" asp-action="Index">
                     @if (ViewData["LogoUrl"] != null)
@@ -46,21 +50,21 @@
                 </button>
                 <div class="collapse navbar-collapse" id="mainNav">
                     <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-lg-4">
-                        <li class="nav-item"><a class="nav-link" asp-controller="Home" asp-action="Index">Home</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Listings" asp-action="Browse">Textbooks</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Accommodation" asp-action="Index">Accommodation</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Electronics" asp-action="Index">Electronics</a></li>
-                        <li class="nav-item"><a class="nav-link" asp-controller="Services" asp-action="Index">Services</a></li>
+                        <li class="nav-item"><a class="@NavClass("Home")" asp-controller="Home" asp-action="Index">Home</a></li>
+                        <li class="nav-item"><a class="@NavClass("Listings")" asp-controller="Listings" asp-action="Browse">Textbooks</a></li>
+                        <li class="nav-item"><a class="@NavClass("Accommodation")" asp-controller="Accommodation" asp-action="Index">Accommodation</a></li>
+                        <li class="nav-item"><a class="@NavClass("Electronics")" asp-controller="Electronics" asp-action="Index">Electronics</a></li>
+                        <li class="nav-item"><a class="@NavClass("Services")" asp-controller="Services" asp-action="Index">Services</a></li>
                     </ul>
                     <ul class="navbar-nav">
                         @if (User.Identity?.IsAuthenticated == true)
                         {
                             if (User.IsInRole(VarsityLoop.Models.Entities.RoleNames.Admin) || User.IsInRole(VarsityLoop.Models.Entities.RoleNames.SuperAdmin))
                             {
-                                <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Index">Admin</a></li>
+                                <li class="nav-item"><a class="@NavClass("Admin")" asp-controller="Admin" asp-action="Index">Admin</a></li>
                             }
                             <li class="nav-item"><a class="nav-link" asp-controller="Listings" asp-action="MyListings">My Listings</a></li>
-                            <li class="nav-item"><a class="nav-link" asp-controller="Favorites" asp-action="Index">Favorites</a></li>
+                            <li class="nav-item"><a class="@NavClass("Favorites")" asp-controller="Favorites" asp-action="Index">Favorites</a></li>
                             <li class="nav-item d-flex align-items-center">
                                 <a class="nav-link pe-2" asp-controller="Account" asp-action="Profile">Hi, @User.Identity.Name</a>
                             </li>
@@ -73,7 +77,7 @@
                         else
                         {
                             <li class="nav-item"><a class="nav-link" asp-controller="Account" asp-action="Login">Log In</a></li>
-                            <li class="nav-item"><a class="btn btn-primary vl-btn-primary ms-lg-2" asp-controller="Account" asp-action="Register">Sign Up</a></li>
+                            <li class="nav-item"><a class="btn btn-coral ms-lg-2" asp-controller="Account" asp-action="Register">Sign Up</a></li>
                         }
                     </ul>
                 </div>
@@ -85,36 +89,75 @@
         @RenderBody()
     </main>
 
-    <footer class="vl-footer mt-5 py-4 border-top bg-light">
-        <div class="container text-center text-muted small">
-            @{
-                var socialLinks = new (string? Url, string Label)[]
-                {
-                    (ViewData["FacebookLink"] as string, "Facebook"),
-                    (ViewData["InstagramLink"] as string, "Instagram"),
-                    (ViewData["LinkedInLink"] as string, "LinkedIn"),
-                    (ViewData["TwitterLink"] as string, "Twitter/X")
-                };
-                var activeSocialLinks = socialLinks.Where(l => !string.IsNullOrEmpty(l.Url)).ToList();
-            }
-            @if (activeSocialLinks.Count > 0 || ViewData["SupportEmail"] != null || ViewData["SupportPhone"] != null)
-            {
-                <div class="mb-2">
-                    @if (ViewData["SupportEmail"] != null)
-                    {
-                        <span class="me-3">@ViewData["SupportEmail"]</span>
+    <footer class="vl-footer mt-5 py-5">
+        <div class="container">
+            <div class="row g-4 mb-4">
+                <div class="col-6 col-md-3">
+                    <h6>Varsity Loop</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><a asp-controller="Home" asp-action="Index">Home</a></li>
+                        <li class="mb-2"><a asp-controller="Listings" asp-action="Browse">Browse Textbooks</a></li>
+                        <li class="mb-2"><a asp-controller="Listings" asp-action="Create">Sell a Textbook</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-3">
+                    <h6>Categories</h6>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><a asp-controller="Accommodation" asp-action="Index">Accommodation</a></li>
+                        <li class="mb-2"><a asp-controller="Electronics" asp-action="Index">Electronics</a></li>
+                        <li class="mb-2"><a asp-controller="Services" asp-action="Index">Services</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-3">
+                    <h6>Support</h6>
+                    <ul class="list-unstyled small">
+                        @if (ViewData["SupportEmail"] != null)
+                        {
+                            <li class="mb-2"><a href="mailto:@ViewData["SupportEmail"]">@ViewData["SupportEmail"]</a></li>
+                        }
+                        @if (ViewData["SupportPhone"] != null)
+                        {
+                            <li class="mb-2">@ViewData["SupportPhone"]</li>
+                        }
+                        <li class="mb-2"><a asp-controller="Legal" asp-action="Terms">Terms of Use</a></li>
+                        <li class="mb-2"><a asp-controller="Legal" asp-action="Privacy">Privacy Policy</a></li>
+                    </ul>
+                </div>
+                <div class="col-6 col-md-3">
+                    <h6>Follow Us</h6>
+                    @{
+                        var socialLinks = new (string? Url, string Label)[]
+                        {
+                            (ViewData["FacebookLink"] as string, "Facebook"),
+                            (ViewData["InstagramLink"] as string, "Instagram"),
+                            (ViewData["LinkedInLink"] as string, "LinkedIn"),
+                            (ViewData["TwitterLink"] as string, "Twitter/X")
+                        };
+                        var activeSocialLinks = socialLinks.Where(l => !string.IsNullOrEmpty(l.Url)).ToList();
                     }
-                    @if (ViewData["SupportPhone"] != null)
+                    @if (activeSocialLinks.Count > 0)
                     {
-                        <span class="me-3">@ViewData["SupportPhone"]</span>
+                        <ul class="list-unstyled small">
+                            @foreach (var link in activeSocialLinks)
+                            {
+                                <li class="mb-2"><a href="@link.Url" target="_blank" rel="noopener">@link.Label</a></li>
+                            }
+                        </ul>
                     }
-                    @foreach (var link in activeSocialLinks)
+                    else
                     {
-                        <a href="@link.Url" class="me-3 text-muted" target="_blank" rel="noopener">@link.Label</a>
+                        <p class="small mb-0">Find us once we're live on social media.</p>
                     }
                 </div>
-            }
-            <p class="mb-0">@Html.Raw(ViewData["FooterText"] ?? $"&copy; {DateTime.UtcNow.Year} Varsity Loop. All rights reserved.")</p>
+            </div>
+            <hr style="border-color: rgba(255,255,255,0.1);" />
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 small">
+                <p class="mb-0">@Html.Raw(ViewData["FooterText"] ?? $"&copy; {DateTime.UtcNow.Year} Varsity Loop. All rights reserved.")</p>
+                <div>
+                    <a asp-controller="Legal" asp-action="Terms" class="me-3">Terms of Use</a>
+                    <a asp-controller="Legal" asp-action="Privacy">Privacy Policy</a>
+                </div>
+            </div>
         </div>
     </footer>
 
