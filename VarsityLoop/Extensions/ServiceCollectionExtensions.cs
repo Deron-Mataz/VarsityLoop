@@ -88,6 +88,7 @@ namespace VarsityLoop.Extensions
                 new FirestoreRepository<SiteSettings>(sp.GetRequiredService<FirestoreDb>(), "SiteSettings"));
 
             services.AddScoped<IListingRepository, ListingRepository>();
+            services.AddScoped<IFavoriteRepository, FavoriteRepository>();
 
             services.AddScoped<IFirestoreRepository<Category>>(sp =>
                 new FirestoreRepository<Category>(sp.GetRequiredService<FirestoreDb>(), "Categories"));
@@ -139,6 +140,17 @@ namespace VarsityLoop.Extensions
             services.AddScoped<IActivityLogService, ActivityLogService>();
             services.AddScoped<IReportService, ReportService>();
             services.AddScoped<IAdminUserService, AdminUserService>();
+            return services;
+        }
+
+        /// <summary>
+        /// Registers Phase 7 services: favorites/wishlist. Must be called
+        /// after AddListingServices, since FavoriteService depends on
+        /// IListingService to resolve favorited listings.
+        /// </summary>
+        public static IServiceCollection AddFavoriteServices(this IServiceCollection services)
+        {
+            services.AddScoped<IFavoriteService, FavoriteService>();
             return services;
         }
 

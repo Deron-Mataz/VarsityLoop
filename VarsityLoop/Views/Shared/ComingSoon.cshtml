@@ -1,0 +1,11 @@
+@{
+    var moduleName = ViewData["ModuleName"] as string ?? "This section";
+}
+
+<div class="container py-5">
+    <div class="vl-card vl-empty-state py-5">
+        <h1 class="h3 mb-2">@moduleName Marketplace Coming Soon</h1>
+        <p class="mb-4">We're working on bringing @moduleName?.ToLower() to Varsity Loop. In the meantime, check out textbooks.</p>
+        <a asp-controller="Listings" asp-action="Browse" class="btn btn-primary">Browse Textbooks</a>
+    </div>
+</div>

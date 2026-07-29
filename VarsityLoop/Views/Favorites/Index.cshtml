@@ -1,0 +1,27 @@
+@model List<VarsityLoop.Models.Entities.Listing>
+@{
+    ViewData["Title"] = "My Favorites";
+}
+
+<div class="container py-5">
+    <h1 class="h3 mb-4">My Favorites</h1>
+
+    @if (Model.Count == 0)
+    {
+        <div class="vl-card vl-empty-state">
+            <h5>No favorites yet</h5>
+            <p class="mb-0">Save listings you're interested in and they'll show up here.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var listing in Model)
+            {
+                <div class="col-sm-6 col-md-4 col-lg-3">
+                    <partial name="_ListingCard" model="listing" />
+                </div>
+            }
+        </div>
+    }
+</div>

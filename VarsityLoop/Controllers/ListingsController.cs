@@ -14,13 +14,15 @@ namespace VarsityLoop.Controllers
         private readonly IListingService _listingService;
         private readonly ICategoryService _categoryService;
         private readonly IReportService _reportService;
+        private readonly IFavoriteService _favoriteService;
         private readonly IUserRepository _userRepository;
 
-        public ListingsController(IListingService listingService, ICategoryService categoryService, IReportService reportService, IUserRepository userRepository)
+        public ListingsController(IListingService listingService, ICategoryService categoryService, IReportService reportService, IFavoriteService favoriteService, IUserRepository userRepository)
         {
             _listingService = listingService;
             _categoryService = categoryService;
             _reportService = reportService;
+            _favoriteService = favoriteService;
             _userRepository = userRepository;
         }
 
@@ -76,6 +78,12 @@ namespace VarsityLoop.Controllers
             }
 
             ViewData["Title"] = listing.Title;
+
+            if (CurrentUserId != null && listing.SellerId != CurrentUserId)
+            {
+                ViewData["IsFavorited"] = await _favoriteService.IsFavoritedAsync(CurrentUserId, listing.Id);
+            }
+
             return View(listing);
         }
 

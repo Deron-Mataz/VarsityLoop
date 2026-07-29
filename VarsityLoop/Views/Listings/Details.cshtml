@@ -65,8 +65,19 @@
 
             <div class="vl-card p-3 mb-3">
                 <h2 class="h6 mb-1">Seller</h2>
-                <p class="mb-0">@Model.SellerName</p>
+                <a asp-controller="Sellers" asp-action="Details" asp-route-id="@Model.SellerId" class="mb-0 text-decoration-none">@Model.SellerName</a>
             </div>
+
+            @if (!isOwner && User.Identity?.IsAuthenticated == true)
+            {
+                var isFavorited = ViewData["IsFavorited"] as bool? ?? false;
+                <form asp-controller="Favorites" asp-action="Toggle" method="post" class="mb-3">
+                    <input type="hidden" name="listingId" value="@Model.Id" />
+                    <button type="submit" class="btn @(isFavorited ? "btn-primary" : "btn-outline-primary") w-100">
+                        @(isFavorited ? "★ Saved to Favorites" : "☆ Save to Favorites")
+                    </button>
+                </form>
+            }
 
             @if (isOwner)
             {

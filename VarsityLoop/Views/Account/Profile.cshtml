@@ -1,0 +1,61 @@
+@model VarsityLoop.Models.ViewModels.Account.ProfileViewModel
+@{
+    ViewData["Title"] = "My Profile";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <h1 class="h3 mb-4">My Profile</h1>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+            }
+
+            <form asp-controller="Account" asp-action="Profile" method="post" enctype="multipart/form-data" novalidate>
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="mb-3 d-flex align-items-center gap-3">
+                    @if (!string.IsNullOrEmpty(Model.ProfilePictureUrl))
+                    {
+                        <img src="@Model.ProfilePictureUrl" style="width: 64px; height: 64px; object-fit: cover; border-radius: 50%;" />
+                    }
+                    <div class="flex-grow-1">
+                        <label asp-for="ProfilePictureFile" class="form-label"></label>
+                        <input asp-for="ProfilePictureFile" type="file" class="form-control" accept="image/png,image/jpeg,image/webp" />
+                        <span asp-validation-for="ProfilePictureFile" class="invalid-feedback d-block small"></span>
+                        <input type="hidden" asp-for="ProfilePictureUrl" />
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-6">
+                        <label asp-for="FirstName" class="form-label"></label>
+                        <input asp-for="FirstName" class="form-control" />
+                        <span asp-validation-for="FirstName" class="invalid-feedback d-block small"></span>
+                    </div>
+                    <div class="col-6">
+                        <label asp-for="LastName" class="form-label"></label>
+                        <input asp-for="LastName" class="form-control" />
+                        <span asp-validation-for="LastName" class="invalid-feedback d-block small"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="University" class="form-label"></label>
+                    <input asp-for="University" class="form-control" />
+                    <span asp-validation-for="University" class="invalid-feedback d-block small"></span>
+                </div>
+
+                <div class="mb-4">
+                    <label asp-for="Biography" class="form-label"></label>
+                    <textarea asp-for="Biography" class="form-control" rows="3" placeholder="Tell other students a bit about yourself"></textarea>
+                    <span asp-validation-for="Biography" class="invalid-feedback d-block small"></span>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </form>
+        </div>
+    </div>
+</div>

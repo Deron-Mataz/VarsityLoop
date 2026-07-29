@@ -12,7 +12,7 @@ This solution is being built in phases. **Phase 1 (Foundation) is complete.**
 - [x] Phase 4 — Listings core (Books MVP), image upload
 - [x] Phase 5 — Search, filters, pagination, categories, homepage wiring
 - [x] Phase 6 — Admin panel: users, listing moderation, reports, activity logs, roles (Media Library deferred - see note below)
-- [ ] Phase 7 — Seller profiles, favorites/wishlist, Accommodation/Electronics/Services placeholders
+- [x] Phase 7 — Seller profiles, favorites/wishlist, profile management, Accommodation/Electronics/Services placeholders
 
 Later phases will build directly on top of what's here — nothing below needs to be redone.
 
@@ -45,6 +45,10 @@ Later phases will build directly on top of what's here — nothing below needs t
 10. **Admin Panel (Phase 6)**: signed-in Admins/SuperAdmins get a dashboard at `/Admin` linking to Users (search, role assignment, deactivate/delete), Listings (search, suspend/remove/restore), Categories, Reports (from the "Report this listing" link on any listing page), and a full Activity Log recording every moderation action. Only a SuperAdmin can grant or revoke the SuperAdmin role — an Admin attempting that gets a clear error rather than a silent failure. No new Firestore indexes are needed for any of this — these queries follow the same single-equality-filter-then-sort-in-memory pattern from Phase 5.
 
     **Scope note**: the original spec's "Media Library" (a standalone view of all uploaded files) was intentionally left out of Phase 6 — branding assets and listing photos are already manageable through Site Settings and each listing's own edit page respectively, so a separate library view wouldn't add functionality yet. Worth revisiting once there's an actual need to browse/reuse media across listings.
+
+11. **Republish Storage Rules again**: Phase 7 adds profile picture uploads, which need the same public-read treatment as logos/listing photos. The `storage.rules` file in the repo root has been updated — republish it in Firebase Console → Storage → Rules.
+
+12. **Phase 7 additions**: My Profile page (bio + profile picture, under your name in the nav), public seller profile pages (linked from any listing's "Seller" card), a Favorites/Wishlist ("Save to Favorites" button on any listing you don't own), and working Accommodation/Electronics/Services placeholder pages — those three nav links existed since Phase 1 but had no controller behind them until now (they were 404ing).
 
 > **Note on the index requirement above**: Phase 5 changed how Browse/filtering works internally — sorting now happens in the app rather than as a Firestore `orderBy`, which means the *original* Browse query from Phase 4 no longer needs a composite index at all. If you already created that index per step 8, it's now unused but harmless; if you're setting this up fresh, you likely won't hit that error for Browse/My Listings anymore. This trade-off (documented in `IListingRepository`) is fine for an MVP-sized catalogue — a large one would want to move filtering back into Firestore query clauses or a dedicated search index.
 

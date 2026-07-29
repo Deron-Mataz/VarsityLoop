@@ -1,0 +1,54 @@
+@model VarsityLoop.Models.Entities.ApplicationUser
+@{
+    ViewData["Title"] = Model.FullName;
+    var listings = ViewData["SellerListings"] as List<VarsityLoop.Models.Entities.Listing> ?? new();
+}
+
+<div class="container py-5">
+    <div class="vl-card p-4 mb-4 d-flex align-items-center gap-3 flex-wrap">
+        @if (!string.IsNullOrEmpty(Model.ProfilePictureUrl))
+        {
+            <img src="@Model.ProfilePictureUrl" alt="@Model.FullName" style="width: 80px; height: 80px; object-fit: cover; border-radius: 50%;" />
+        }
+        else
+        {
+            <div style="width: 80px; height: 80px; border-radius: 50%; background: #eef0f3;" class="d-flex align-items-center justify-content-center text-muted fw-bold fs-4">
+                @Model.FirstName.Substring(0, 1)@Model.LastName.Substring(0, 1)
+            </div>
+        }
+        <div>
+            <h1 class="h4 mb-1">@Model.FullName</h1>
+            <p class="text-muted small mb-0">@Model.University</p>
+            <p class="text-muted small mb-0">Joined @Model.CreatedAt.ToDateTime().ToString("MMMM yyyy")</p>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.Biography))
+    {
+        <div class="vl-card p-4 mb-4">
+            <h2 class="h6">About</h2>
+            <p class="mb-0" style="white-space: pre-wrap;">@Model.Biography</p>
+        </div>
+    }
+
+    <h2 class="h5 mb-3">Listings from @Model.FirstName</h2>
+
+    @if (listings.Count == 0)
+    {
+        <div class="vl-card vl-empty-state">
+            <h5>No active listings</h5>
+            <p class="mb-0">Check back later.</p>
+        </div>
+    }
+    else
+    {
+        <div class="row g-4">
+            @foreach (var listing in listings)
+            {
+                <div class="col-sm-6 col-md-4 col-lg-3">
+                    <partial name="_ListingCard" model="listing" />
+                </div>
+            }
+        </div>
+    }
+</div>

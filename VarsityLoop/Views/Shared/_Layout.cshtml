@@ -60,8 +60,9 @@
                                 <li class="nav-item"><a class="nav-link" asp-controller="Admin" asp-action="Index">Admin</a></li>
                             }
                             <li class="nav-item"><a class="nav-link" asp-controller="Listings" asp-action="MyListings">My Listings</a></li>
+                            <li class="nav-item"><a class="nav-link" asp-controller="Favorites" asp-action="Index">Favorites</a></li>
                             <li class="nav-item d-flex align-items-center">
-                                <span class="nav-link pe-2">Hi, @User.Identity.Name</span>
+                                <a class="nav-link pe-2" asp-controller="Account" asp-action="Profile">Hi, @User.Identity.Name</a>
                             </li>
                             <li class="nav-item d-flex align-items-center">
                                 <form asp-controller="Account" asp-action="Logout" method="post" class="ms-lg-2">
