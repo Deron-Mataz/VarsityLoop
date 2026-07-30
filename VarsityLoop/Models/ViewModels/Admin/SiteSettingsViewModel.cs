@@ -34,6 +34,11 @@ namespace VarsityLoop.Models.ViewModels.Admin
         [Display(Name = "Homepage Hero Description")]
         public string HeroDescription { get; set; } = string.Empty;
 
+        public string? HeroImageUrl { get; set; }
+
+        [Display(Name = "Hero Background Image")]
+        public IFormFile? HeroImageFile { get; set; }
+
         [Required, StringLength(200)]
         [Display(Name = "Footer Text")]
         public string FooterText { get; set; } = string.Empty;

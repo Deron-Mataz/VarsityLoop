@@ -23,5 +23,8 @@ namespace VarsityLoop.Models.ViewModels.Account
 
         [Display(Name = "New Profile Picture")]
         public IFormFile? ProfilePictureFile { get; set; }
+
+        /// <summary>Set when the user picks one of the 6 preset avatars instead of uploading a custom photo.</summary>
+        public int? SelectedAvatar { get; set; }
     }
 }

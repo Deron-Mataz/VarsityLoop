@@ -82,6 +82,20 @@
                 <textarea asp-for="HeroDescription" class="form-control" rows="2"></textarea>
                 <span asp-validation-for="HeroDescription" class="invalid-feedback d-block small"></span>
             </div>
+
+            <div class="mb-1 mt-3">
+                <label asp-for="HeroImageFile" class="form-label"></label>
+                @if (!string.IsNullOrEmpty(Model.HeroImageUrl))
+                {
+                    <div class="mb-2">
+                        <img src="@Model.HeroImageUrl" alt="Current hero image" style="max-height: 100px; border-radius: 0.5rem;" />
+                    </div>
+                }
+                <input asp-for="HeroImageFile" type="file" class="form-control" accept="image/png,image/jpeg,image/webp" />
+                <span asp-validation-for="HeroImageFile" class="invalid-feedback d-block small"></span>
+                <input type="hidden" asp-for="HeroImageUrl" />
+                <p class="text-muted small mt-1 mb-0">Shown behind the homepage hero section. Optional — a gradient is used if none is set.</p>
+            </div>
         </div>
 
         <div class="vl-card p-4 mb-4">

@@ -34,6 +34,7 @@ namespace VarsityLoop.Filters
                 viewResult.ViewData["AccentColour"] = settings.AccentColour;
                 viewResult.ViewData["HeroHeading"] = settings.HeroHeading;
                 viewResult.ViewData["HeroDescription"] = settings.HeroDescription;
+                viewResult.ViewData["HeroImageUrl"] = settings.HeroImageUrl;
                 viewResult.ViewData["FooterText"] = settings.FooterText;
                 viewResult.ViewData["SupportEmail"] = settings.SupportEmail;
                 viewResult.ViewData["SupportPhone"] = settings.SupportPhone;

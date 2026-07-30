@@ -26,5 +26,9 @@ namespace VarsityLoop.Models.ViewModels.Account
 
         [Required]
         public string University { get; set; } = string.Empty;
+
+        [Range(1, 6)]
+        [Display(Name = "Avatar")]
+        public int SelectedAvatar { get; set; } = 1;
     }
 }

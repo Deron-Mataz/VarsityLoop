@@ -1,10 +1,11 @@
 @{
     ViewData["Title"] = "Home";
+    var heroImageUrl = ViewData["HeroImageUrl"] as string;
 }
 
-<section class="vl-hero py-5">
+<section class="vl-hero py-5" style="@(!string.IsNullOrEmpty(heroImageUrl) ? $"background-image: linear-gradient(135deg, rgba(29,78,216,.82), rgba(232,80,63,.75)), url('{heroImageUrl}'); background-size: cover; background-position: center;" : "")">
     <div class="container py-5 text-center text-white vl-hero-content">
-        <span class="badge badge-coral mb-3 px-3 py-2" style="font-size: 0.8rem;">📚 Built for students, by students</span>
+        <span class="badge badge-coral mb-3 px-3 py-2" style="font-size: 0.8rem;"><i class="bi bi-mortarboard-fill me-1"></i> Built for students, by students</span>
         <h1 class="fw-bold display-5">@(ViewData["HeroHeading"] ?? "Buy, sell, and swap with students at your university")</h1>
         <p class="lead mb-4 opacity-75">
             @(ViewData["HeroDescription"] ?? "Textbooks first, everything student life needs next.")
@@ -12,7 +13,7 @@
 
         <form class="mx-auto vl-card p-2 d-flex" style="max-width: 640px;" asp-controller="Listings" asp-action="Browse" method="get">
             <input type="text" name="q" class="form-control border-0" placeholder="Search textbooks, courses, ISBNs..." />
-            <button type="submit" class="btn btn-coral ms-2">Search</button>
+            <button type="submit" class="btn btn-coral ms-2"><i class="bi bi-search"></i></button>
         </form>
     </div>
 </section>
@@ -21,7 +22,7 @@
 
     <section class="mb-5">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h4 mb-0">🔥 Featured Listings</h2>
+            <h2 class="h4 mb-0"><i class="bi bi-fire text-danger me-2"></i>Featured Listings</h2>
             <a asp-controller="Listings" asp-action="Browse" class="small">View all &rarr;</a>
         </div>
 
@@ -50,7 +51,7 @@
 
     <section class="mb-5">
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2 class="h4 mb-0">🆕 Newest Listings</h2>
+            <h2 class="h4 mb-0"><i class="bi bi-stars text-primary me-2"></i>Newest Listings</h2>
             <a asp-controller="Listings" asp-action="Browse" class="small">View all &rarr;</a>
         </div>
 
@@ -83,7 +84,7 @@
         <h2 class="h4 mb-4">Browse Categories</h2>
         @{
             var categories = ViewData["Categories"] as List<VarsityLoop.Models.Entities.Category> ?? new();
-            var categoryIcons = new[] { "📘", "🎒", "💻", "🏠", "🛋️", "🎓", "✏️", "🔬" };
+            var categoryIcons = new[] { "bi-book", "bi-backpack2", "bi-laptop", "bi-house-door", "bi-lamp", "bi-mortarboard", "bi-pencil", "bi-flask" };
         }
         @if (categories.Count == 0)
         {
@@ -100,7 +101,7 @@
                     <div class="col-6 col-md-3">
                         <a asp-controller="Listings" asp-action="Browse" asp-route-categoryId="@categories[i].Id"
                            class="vl-card vl-card-hover p-3 d-block text-center text-decoration-none text-reset h-100">
-                            <div class="fs-3 mb-1">@categoryIcons[i % categoryIcons.Length]</div>
+                            <div class="fs-3 mb-1 text-primary"><i class="bi @categoryIcons[i % categoryIcons.Length]"></i></div>
                             <span class="fw-semibold">@categories[i].Name</span>
                         </a>
                     </div>
@@ -116,21 +117,21 @@
         <div class="row g-4">
             <div class="col-md-4">
                 <div class="vl-card p-4 h-100">
-                    <div class="vl-icon-tile blue">📝</div>
+                    <div class="vl-icon-tile blue"><i class="bi bi-pencil-square"></i></div>
                     <h5>1. Create a listing</h5>
                     <p class="text-muted mb-0">Post your textbook in minutes with photos and pricing.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="vl-card p-4 h-100">
-                    <div class="vl-icon-tile">🤝</div>
+                    <div class="vl-icon-tile"><i class="bi bi-people-fill"></i></div>
                     <h5>2. Connect with buyers</h5>
                     <p class="text-muted mb-0">Students at your university browse and reach out.</p>
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="vl-card p-4 h-100">
-                    <div class="vl-icon-tile green">✅</div>
+                    <div class="vl-icon-tile green"><i class="bi bi-check-circle-fill"></i></div>
                     <h5>3. Meet up and trade</h5>
                     <p class="text-muted mb-0">Arrange a safe, on-campus handoff.</p>
                 </div>

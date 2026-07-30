@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using VarsityLoop.Models.Common;
 using VarsityLoop.Models.ViewModels.Account;
 using VarsityLoop.Repositories.Interfaces;
 using VarsityLoop.Services.Interfaces;
@@ -45,7 +46,8 @@ namespace VarsityLoop.Controllers
             if (!ModelState.IsValid) return View(model);
 
             var result = await _authService.RegisterAsync(
-                model.FirstName, model.LastName, model.Email, model.Password, model.University);
+                model.FirstName, model.LastName, model.Email, model.Password, model.University,
+                AvatarCatalog.Url(model.SelectedAvatar));
 
             if (!result.Success)
             {
@@ -182,6 +184,10 @@ namespace VarsityLoop.Controllers
                 model.ProfilePictureUrl = await _storageService.UploadPublicFileAsync(
                     stream, model.ProfilePictureFile.FileName, model.ProfilePictureFile.ContentType, $"profile-pictures/{currentUser.Id}");
             }
+            else if (model.SelectedAvatar is >= 1 and <= AvatarCatalog.Count)
+            {
+                model.ProfilePictureUrl = AvatarCatalog.Url(model.SelectedAvatar.Value);
+            }
 
             currentUser.FirstName = model.FirstName.Trim();
             currentUser.LastName = model.LastName.Trim();
@@ -209,7 +215,8 @@ namespace VarsityLoop.Controllers
                 new(ClaimTypes.Email, user.Email),
                 new(ClaimTypes.Name, user.FullName),
                 new(ClaimTypes.Role, user.Role),
-                new("university", user.University)
+                new("university", user.University),
+                new("picture", user.ProfilePictureUrl ?? string.Empty)
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

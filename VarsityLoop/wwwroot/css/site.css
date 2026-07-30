@@ -244,7 +244,20 @@ a.vl-card:hover,
     color: #fff;
 }
 
-/* ---------- Admin stat cards ---------- */
+/* ---------- Avatar picker (registration / profile) ---------- */
+.vl-avatar-option {
+    transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.vl-avatar-radio:checked + .vl-avatar-option {
+    border-color: var(--vl-coral) !important;
+    transform: scale(1.08);
+}
+
+.vl-avatar-radio:focus-visible + .vl-avatar-option {
+    outline: 2px solid var(--vl-primary-blue);
+    outline-offset: 2px;
+}
 .vl-stat-card {
     border-radius: var(--vl-radius);
     padding: 1.25rem 1.5rem;

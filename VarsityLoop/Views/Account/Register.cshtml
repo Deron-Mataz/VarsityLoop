@@ -49,6 +49,19 @@
                         <span asp-validation-for="ConfirmPassword" class="invalid-feedback d-block small"></span>
                     </div>
 
+                    <div class="mb-4">
+                        <label class="form-label">Choose an Avatar</label>
+                        <div class="d-flex gap-2 flex-wrap">
+                            @for (var i = 1; i <= VarsityLoop.Models.Common.AvatarCatalog.Count; i++)
+                            {
+                                <label class="position-relative" style="cursor: pointer;">
+                                    <input type="radio" name="SelectedAvatar" value="@i" class="visually-hidden vl-avatar-radio" checked="@(i == 1)" />
+                                    <img src="@VarsityLoop.Models.Common.AvatarCatalog.Url(i)" style="width: 56px; height: 56px; border-radius: 50%; border: 3px solid transparent;" class="vl-avatar-option" />
+                                </label>
+                            }
+                        </div>
+                    </div>
+
                     <button type="submit" class="btn btn-primary w-100">Create Account</button>
                 </form>
 

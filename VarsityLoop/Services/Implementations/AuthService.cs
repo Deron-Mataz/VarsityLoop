@@ -45,7 +45,7 @@ namespace VarsityLoop.Services.Implementations
             _userRepository = userRepository;
         }
 
-        public async Task<OperationResult> RegisterAsync(string firstName, string lastName, string email, string password, string university)
+        public async Task<OperationResult> RegisterAsync(string firstName, string lastName, string email, string password, string university, string avatarUrl)
         {
             email = email.Trim().ToLowerInvariant();
 
@@ -90,6 +90,7 @@ namespace VarsityLoop.Services.Implementations
                 LastName = lastName.Trim(),
                 Email = email,
                 University = university.Trim(),
+                ProfilePictureUrl = avatarUrl,
                 Role = isBootstrapAdmin ? RoleNames.SuperAdmin : RoleNames.User,
                 AccountStatus = Models.Entities.AccountStatus.Active.ToString(),
                 EmailVerified = false
@@ -154,7 +155,7 @@ namespace VarsityLoop.Services.Implementations
                 };
             }
 
-            if (profile.AccountStatus !=  Models.Entities.AccountStatus.Active.ToString())
+            if (profile.AccountStatus != Models.Entities.AccountStatus.Active.ToString())
             {
                 return new SignInResult
                 {

@@ -18,7 +18,8 @@ namespace VarsityLoop.Controllers
     public class AdminController : Controller
     {
         private static readonly string[] AllowedImageTypes = { "image/jpeg", "image/png", "image/webp" };
-        private const long MaxImageBytes = 2 * 1024 * 1024; // 2 MB
+        private const long MaxImageBytes = 2 * 1024 * 1024; // 2 MB (logo/favicon)
+        private const long MaxHeroImageBytes = 10 * 1024 * 1024; // 10 MB - hero is a full-width background, needs to stay HD
 
         private readonly ISiteSettingsService _siteSettingsService;
         private readonly IStorageService _storageService;
@@ -83,6 +84,7 @@ namespace VarsityLoop.Controllers
                 AccentColour = settings.AccentColour,
                 HeroHeading = settings.HeroHeading,
                 HeroDescription = settings.HeroDescription,
+                HeroImageUrl = settings.HeroImageUrl,
                 FooterText = settings.FooterText,
                 SupportEmail = settings.SupportEmail,
                 SupportPhone = settings.SupportPhone,
@@ -102,14 +104,19 @@ namespace VarsityLoop.Controllers
         {
             ViewData["Title"] = "Site Settings";
 
-            if (model.LogoFile != null && !ValidateImage(model.LogoFile, nameof(model.LogoFile)))
+            if (model.LogoFile != null && !ValidateImage(model.LogoFile, MaxImageBytes))
             {
                 ModelState.AddModelError(nameof(model.LogoFile), "Logo must be a JPG, PNG, or WEBP under 2MB.");
             }
 
-            if (model.FaviconFile != null && !ValidateImage(model.FaviconFile, nameof(model.FaviconFile)))
+            if (model.FaviconFile != null && !ValidateImage(model.FaviconFile, MaxImageBytes))
             {
                 ModelState.AddModelError(nameof(model.FaviconFile), "Favicon must be a JPG, PNG, or WEBP under 2MB.");
+            }
+
+            if (model.HeroImageFile != null && !ValidateImage(model.HeroImageFile, MaxHeroImageBytes))
+            {
+                ModelState.AddModelError(nameof(model.HeroImageFile), "Hero image must be a JPG, PNG, or WEBP under 10MB.");
             }
 
             if (!ModelState.IsValid) return View(model);
@@ -130,6 +137,13 @@ namespace VarsityLoop.Controllers
                     stream, model.FaviconFile.FileName, model.FaviconFile.ContentType, "branding/favicon");
             }
 
+            if (model.HeroImageFile != null)
+            {
+                await using var stream = model.HeroImageFile.OpenReadStream();
+                model.HeroImageUrl = await _storageService.UploadPublicFileAsync(
+                    stream, model.HeroImageFile.FileName, model.HeroImageFile.ContentType, "branding/hero");
+            }
+
             settings.SiteName = model.SiteName.Trim();
             settings.LogoUrl = model.LogoUrl ?? settings.LogoUrl;
             settings.FaviconUrl = model.FaviconUrl ?? settings.FaviconUrl;
@@ -137,6 +151,7 @@ namespace VarsityLoop.Controllers
             settings.AccentColour = model.AccentColour;
             settings.HeroHeading = model.HeroHeading.Trim();
             settings.HeroDescription = model.HeroDescription.Trim();
+            settings.HeroImageUrl = model.HeroImageUrl ?? settings.HeroImageUrl;
             settings.FooterText = model.FooterText.Trim();
             settings.SupportEmail = model.SupportEmail?.Trim();
             settings.SupportPhone = model.SupportPhone?.Trim();
@@ -152,9 +167,9 @@ namespace VarsityLoop.Controllers
             return RedirectToAction(nameof(Settings));
         }
 
-        private static bool ValidateImage(IFormFile file, string _)
+        private static bool ValidateImage(IFormFile file, long maxBytes)
         {
-            return AllowedImageTypes.Contains(file.ContentType) && file.Length > 0 && file.Length <= MaxImageBytes;
+            return AllowedImageTypes.Contains(file.ContentType) && file.Length > 0 && file.Length <= maxBytes;
         }
     }
 }

@@ -74,7 +74,7 @@
                 <form asp-controller="Favorites" asp-action="Toggle" method="post" class="mb-3">
                     <input type="hidden" name="listingId" value="@Model.Id" />
                     <button type="submit" class="btn @(isFavorited ? "btn-primary" : "btn-outline-primary") w-100">
-                        @(isFavorited ? "★ Saved to Favorites" : "☆ Save to Favorites")
+                        <i class="bi @(isFavorited ? "bi-star-fill" : "bi-star") me-1"></i>@(isFavorited ? "Saved to Favorites" : "Save to Favorites")
                     </button>
                 </form>
             }

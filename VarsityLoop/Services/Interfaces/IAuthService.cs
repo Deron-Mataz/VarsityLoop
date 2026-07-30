@@ -23,7 +23,7 @@ namespace VarsityLoop.Services.Interfaces
     /// </summary>
     public interface IAuthService
     {
-        Task<OperationResult> RegisterAsync(string firstName, string lastName, string email, string password, string university);
+        Task<OperationResult> RegisterAsync(string firstName, string lastName, string email, string password, string university, string avatarUrl);
 
         Task<SignInResult> SignInAsync(string email, string password);
 

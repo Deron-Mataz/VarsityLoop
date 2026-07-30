@@ -36,6 +36,9 @@ namespace VarsityLoop.Models.Entities
         [FirestoreProperty("heroDescription")]
         public string HeroDescription { get; set; } = "Textbooks first, everything student life needs next.";
 
+        [FirestoreProperty("heroImageUrl")]
+        public string? HeroImageUrl { get; set; }
+
         [FirestoreProperty("footerText")]
         public string FooterText { get; set; } = $"© {DateTime.UtcNow.Year} Varsity Loop. All rights reserved.";
 
