@@ -44,19 +44,61 @@
 
         <div class="col-lg-5">
             <h1 class="h3 mb-1">@Model.Title</h1>
-            <p class="text-muted mb-3">@Model.Author</p>
+            <p class="text-muted mb-3">@(!string.IsNullOrEmpty(Model.Author) ? Model.Author : $"{Model.Brand} {Model.Model}".Trim())</p>
             <p class="h4 text-primary mb-3">R@(Model.Price.ToString("N2"))</p>
 
             <div class="vl-card p-3 mb-3">
                 <dl class="row mb-0 small">
+                    <dt class="col-5">Category</dt><dd class="col-7">@Model.CategoryName</dd>
                     <dt class="col-5">Condition</dt><dd class="col-7">@Model.Condition</dd>
-                    <dt class="col-5">Course</dt><dd class="col-7">@(Model.Course ?? "—")</dd>
-                    <dt class="col-5">Faculty</dt><dd class="col-7">@(Model.Faculty ?? "—")</dd>
-                    <dt class="col-5">ISBN</dt><dd class="col-7">@(Model.Isbn ?? "—")</dd>
+                    @if (!string.IsNullOrEmpty(Model.Author) || !string.IsNullOrEmpty(Model.Course) || !string.IsNullOrEmpty(Model.Isbn) || !string.IsNullOrEmpty(Model.Faculty))
+                    {
+                        @if (!string.IsNullOrEmpty(Model.Author))
+                        {
+                            <dt class="col-5">Author</dt><dd class="col-7">@Model.Author</dd>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Course))
+                        {
+                            <dt class="col-5">Course</dt><dd class="col-7">@Model.Course</dd>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Faculty))
+                        {
+                            <dt class="col-5">Faculty</dt><dd class="col-7">@Model.Faculty</dd>
+                        }
+                        @if (!string.IsNullOrEmpty(Model.Isbn))
+                        {
+                            <dt class="col-5">ISBN</dt><dd class="col-7">@Model.Isbn</dd>
+                        }
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Type))
+                    {
+                        <dt class="col-5">Type</dt><dd class="col-7">@Model.Type</dd>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Brand))
+                    {
+                        <dt class="col-5">Brand</dt><dd class="col-7">@Model.Brand</dd>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Model))
+                    {
+                        <dt class="col-5">Model</dt><dd class="col-7">@Model.Model</dd>
+                    }
                     <dt class="col-5">University</dt><dd class="col-7">@Model.University</dd>
                     <dt class="col-5">Location</dt><dd class="col-7">@(Model.Location ?? "—")</dd>
                 </dl>
             </div>
+
+            @if (Model.Specifications is { Count: > 0 })
+            {
+                <div class="vl-card p-3 mb-3">
+                    <h2 class="h6">Specifications</h2>
+                    <ul class="mb-0 small">
+                        @foreach (var spec in Model.Specifications)
+                        {
+                            <li>@spec</li>
+                        }
+                    </ul>
+                </div>
+            }
 
             <div class="vl-card p-3 mb-3">
                 <h2 class="h6">Description</h2>

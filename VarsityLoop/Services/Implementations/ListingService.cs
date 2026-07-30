@@ -45,6 +45,9 @@ namespace VarsityLoop.Services.Implementations
                     (l.Isbn?.ToLowerInvariant().Contains(term) ?? false) ||
                     (l.Course?.ToLowerInvariant().Contains(term) ?? false) ||
                     (l.Faculty?.ToLowerInvariant().Contains(term) ?? false) ||
+                    (l.Type?.ToLowerInvariant().Contains(term) ?? false) ||
+                    (l.Brand?.ToLowerInvariant().Contains(term) ?? false) ||
+                    (l.Model?.ToLowerInvariant().Contains(term) ?? false) ||
                     l.University.ToLowerInvariant().Contains(term) ||
                     l.SellerName.ToLowerInvariant().Contains(term));
             }
@@ -149,6 +152,10 @@ namespace VarsityLoop.Services.Implementations
                 Condition = model.Condition.ToString(),
                 University = model.University.Trim(),
                 Location = model.Location?.Trim(),
+                Type = model.Type?.Trim(),
+                Brand = model.Brand?.Trim(),
+                Model = model.Model?.Trim(),
+                Specifications = model.Specifications?.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).ToList() ?? new List<string>(),
                 ImageUrls = imageUrls,
                 SellerId = sellerId,
                 SellerName = sellerName,
@@ -222,6 +229,10 @@ namespace VarsityLoop.Services.Implementations
             listing.Condition = model.Condition.ToString();
             listing.University = model.University.Trim();
             listing.Location = model.Location?.Trim();
+            listing.Type = model.Type?.Trim();
+            listing.Brand = model.Brand?.Trim();
+            listing.Model = model.Model?.Trim();
+            listing.Specifications = model.Specifications?.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).ToList() ?? new List<string>();
             listing.ImageUrls = model.ExistingImageUrls.Concat(newlyUploadedUrls).ToList();
 
             await _listingRepository.UpdateAsync(listing.Id, listing);

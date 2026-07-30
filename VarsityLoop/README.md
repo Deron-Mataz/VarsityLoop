@@ -14,6 +14,18 @@ This solution is being built in phases. **Phase 1 (Foundation) is complete.**
 - [x] Phase 6 — Admin panel: users, listing moderation, reports, activity logs, roles (Media Library deferred - see note below)
 - [x] Phase 7 — Seller profiles, favorites/wishlist, profile management, Accommodation/Electronics/Services placeholders
 
+## Section 2 — Marketplace Expansion
+
+- [x] Phase 8 — Electronics marketplace (dynamic Type/Brand/Model/Specifications fields, reusing the existing Listing/Category architecture)
+- [ ] Phase 9 — Fashion marketplace
+- [ ] Phase 10 — Study Supplies marketplace
+- [ ] Phase 11 — Student Accommodation foundation
+- [ ] Phase 12 — Landlord verification system
+- [ ] Phase 13 — Landlord dashboard
+- [ ] Phase 14 — Accommodation CMS
+- [ ] Phase 15 — Real-time marketplace chat
+- [ ] Phase 16 — Professional admin analytics dashboard
+
 Later phases will build directly on top of what's here — nothing below needs to be redone.
 
 ## Setup (Visual Studio 2022)
@@ -49,6 +61,8 @@ Later phases will build directly on top of what's here — nothing below needs t
 11. **Republish Storage Rules again**: Phase 7 adds profile picture uploads, which need the same public-read treatment as logos/listing photos. The `storage.rules` file in the repo root has been updated — republish it in Firebase Console → Storage → Rules.
 
 12. **Phase 7 additions**: My Profile page (bio + profile picture, under your name in the nav), public seller profile pages (linked from any listing's "Seller" card), a Favorites/Wishlist ("Save to Favorites" button on any listing you don't own), and working Accommodation/Electronics/Services placeholder pages — those three nav links existed since Phase 1 but had no controller behind them until now (they were 404ing).
+
+13. **Phase 8 — Electronics, and the dynamic listing form**: rather than building a separate Electronics marketplace, one `Listing` entity and one form now serve both Books and Electronics (and Fashion/Study Supplies once Phases 9-10 land). Each `Category` now has a `Module` (Books/Electronics/Fashion/StudySupplies/Accommodation/Services) — when creating a category in Admin → Categories, set its Module to match what it's for. The listing form shows Book fields (Author/ISBN/Course/Faculty) or Item fields (Type/Brand/Model/dynamic Specifications list) automatically based on which category is selected, via a small vanilla-JS toggle keyed off each category's Module — no page reload, no separate forms to maintain. To try it: create a category with Module = Electronics, then create a listing under it.
 
 > **Note on the index requirement above**: Phase 5 changed how Browse/filtering works internally — sorting now happens in the app rather than as a Firestore `orderBy`, which means the *original* Browse query from Phase 4 no longer needs a composite index at all. If you already created that index per step 8, it's now unused but harmless; if you're setting this up fresh, you likely won't hit that error for Browse/My Listings anymore. This trade-off (documented in `IListingRepository`) is fine for an MVP-sized catalogue — a large one would want to move filtering back into Firestore query clauses or a dedicated search index.
 

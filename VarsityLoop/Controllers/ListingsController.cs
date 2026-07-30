@@ -33,7 +33,7 @@ namespace VarsityLoop.Controllers
         public async Task<IActionResult> Browse(string? q, string? categoryId, double? minPrice, double? maxPrice,
             ListingCondition? condition, ListingSortOption sort = ListingSortOption.Newest, int page = 1)
         {
-            ViewData["Title"] = "Textbooks";
+            ViewData["Title"] = "Marketplace";
 
             var query = new ListingBrowseQuery
             {
@@ -156,6 +156,10 @@ namespace VarsityLoop.Controllers
                 Condition = Enum.TryParse<ListingCondition>(listing.Condition, out var c) ? c : ListingCondition.Good,
                 University = listing.University,
                 Location = listing.Location,
+                Type = listing.Type,
+                Brand = listing.Brand,
+                Model = listing.Model,
+                Specifications = listing.Specifications,
                 ExistingImageUrls = listing.ImageUrls
             };
 
@@ -248,8 +252,7 @@ namespace VarsityLoop.Controllers
 
         private async Task PopulateCategoriesAsync()
         {
-            var categories = await _categoryService.GetAllAsync();
-            ViewBag.Categories = new SelectList(categories, "Id", "Name");
+            ViewBag.Categories = await _categoryService.GetAllAsync();
         }
     }
 }

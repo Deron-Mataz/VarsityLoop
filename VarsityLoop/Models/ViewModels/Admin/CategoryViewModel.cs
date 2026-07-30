@@ -15,5 +15,9 @@ namespace VarsityLoop.Models.ViewModels.Admin
         [Range(0, 999)]
         [Display(Name = "Display Order")]
         public int DisplayOrder { get; set; } = 0;
+
+        [Required]
+        [Display(Name = "Marketplace Module")]
+        public VarsityLoop.Models.Entities.CategoryModule Module { get; set; } = VarsityLoop.Models.Entities.CategoryModule.Books;
     }
 }

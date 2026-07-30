@@ -22,6 +22,12 @@
                     <textarea asp-for="Description" class="form-control" rows="2"></textarea>
                 </div>
 
+                <div class="mb-3">
+                    <label asp-for="Module" class="form-label"></label>
+                    <select asp-for="Module" class="form-select" asp-items="Html.GetEnumSelectList<VarsityLoop.Models.Entities.CategoryModule>()"></select>
+                    <p class="text-muted small mt-1 mb-0">Determines which fields the listing form shows for listings in this category.</p>
+                </div>
+
                 <div class="mb-4">
                     <label asp-for="DisplayOrder" class="form-label"></label>
                     <input asp-for="DisplayOrder" type="number" class="form-control" style="max-width: 120px;" />

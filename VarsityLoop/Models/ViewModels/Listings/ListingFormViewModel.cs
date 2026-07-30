@@ -37,6 +37,18 @@ namespace VarsityLoop.Models.ViewModels.Listings
         [Required]
         public ListingCondition Condition { get; set; } = ListingCondition.Good;
 
+        [StringLength(60)]
+        public string? Type { get; set; }
+
+        [StringLength(60)]
+        public string? Brand { get; set; }
+
+        [StringLength(60)]
+        public string? Model { get; set; }
+
+        /// <summary>Free-text spec lines (e.g. "8GB RAM"), added/removed dynamically in the form.</summary>
+        public List<string> Specifications { get; set; } = new();
+
         [Required, StringLength(150)]
         public string University { get; set; } = string.Empty;
 

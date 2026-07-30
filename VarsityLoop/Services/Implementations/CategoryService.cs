@@ -22,7 +22,7 @@ namespace VarsityLoop.Services.Implementations
 
         public Task<Category?> GetByIdAsync(string id) => _repository.GetByIdAsync(id);
 
-        public async Task<OperationResult> CreateAsync(string name, string? description, int displayOrder)
+        public async Task<OperationResult> CreateAsync(string name, string? description, int displayOrder, CategoryModule module)
         {
             name = name.Trim();
 
@@ -36,13 +36,14 @@ namespace VarsityLoop.Services.Implementations
             {
                 Name = name,
                 Description = description?.Trim(),
-                DisplayOrder = displayOrder
+                DisplayOrder = displayOrder,
+                Module = module.ToString()
             });
 
             return OperationResult.Ok();
         }
 
-        public async Task<OperationResult> UpdateAsync(string id, string name, string? description, int displayOrder)
+        public async Task<OperationResult> UpdateAsync(string id, string name, string? description, int displayOrder, CategoryModule module)
         {
             var category = await _repository.GetByIdAsync(id);
             if (category == null) return OperationResult.Fail("Category not found.");
@@ -58,6 +59,7 @@ namespace VarsityLoop.Services.Implementations
             category.Name = name;
             category.Description = description?.Trim();
             category.DisplayOrder = displayOrder;
+            category.Module = module.ToString();
 
             await _repository.UpdateAsync(id, category);
             return OperationResult.Ok();
