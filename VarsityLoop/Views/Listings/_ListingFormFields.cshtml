@@ -98,9 +98,15 @@
         <div class="row g-3 mb-3">
             <div class="col-md-4">
                 <label asp-for="Type" class="form-label"></label>
-                <input asp-for="Type" class="form-control" list="typeSuggestions" placeholder="e.g. Laptop" />
-                <datalist id="typeSuggestions">
+                <input asp-for="Type" id="typeInput" class="form-control" list="typeSuggestionsElectronics" placeholder="e.g. Laptop" />
+                <datalist id="typeSuggestionsElectronics">
                     @foreach (var suggestion in VarsityLoop.Models.Common.ListingTypeSuggestions.Electronics)
+                    {
+                        <option value="@suggestion"></option>
+                    }
+                </datalist>
+                <datalist id="typeSuggestionsFashion">
+                    @foreach (var suggestion in VarsityLoop.Models.Common.ListingTypeSuggestions.Fashion)
                     {
                         <option value="@suggestion"></option>
                     }

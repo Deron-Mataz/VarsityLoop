@@ -15,5 +15,11 @@ namespace VarsityLoop.Models.Common
             "Printer", "Router", "Speakers", "Headphones", "Earbuds", "Smart Watch",
             "Fridge", "Bar Fridge", "Microwave", "Kettle", "Air Fryer", "Heater", "Fan", "Other"
         };
+
+        public static readonly string[] Fashion =
+        {
+            "Shoes", "Jerseys", "Jackets", "Hoodies", "Dresses", "Watches",
+            "Bags", "Jewellery", "Caps", "Sunglasses", "Other"
+        };
     }
 }

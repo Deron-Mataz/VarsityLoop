@@ -15,6 +15,12 @@ function initListingFormModuleToggle() {
     if (!select) return;
 
     var groups = document.querySelectorAll(".vl-module-fields");
+    var typeInput = document.getElementById("typeInput");
+
+    var datalistByModule = {
+        Electronics: "typeSuggestionsElectronics",
+        Fashion: "typeSuggestionsFashion"
+    };
 
     function applyVisibility() {
         var selectedOption = select.options[select.selectedIndex];
@@ -25,6 +31,10 @@ function initListingFormModuleToggle() {
             var matches = currentModule && modules.indexOf(currentModule) !== -1;
             group.style.display = matches ? "" : "none";
         });
+
+        if (typeInput && currentModule && datalistByModule[currentModule]) {
+            typeInput.setAttribute("list", datalistByModule[currentModule]);
+        }
     }
 
     select.addEventListener("change", applyVisibility);

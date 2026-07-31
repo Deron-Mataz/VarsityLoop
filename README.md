@@ -17,7 +17,7 @@ This solution is being built in phases. **Phase 1 (Foundation) is complete.**
 ## Section 2 — Marketplace Expansion
 
 - [x] Phase 8 — Electronics marketplace (dynamic Type/Brand/Model/Specifications fields, reusing the existing Listing/Category architecture)
-- [ ] Phase 9 — Fashion marketplace
+- [x] Phase 9 — Fashion marketplace (reuses Phase 8's dynamic fields entirely; just a new suggested-types list)
 - [ ] Phase 10 — Study Supplies marketplace
 - [ ] Phase 11 — Student Accommodation foundation
 - [ ] Phase 12 — Landlord verification system
@@ -63,6 +63,8 @@ Later phases will build directly on top of what's here — nothing below needs t
 12. **Phase 7 additions**: My Profile page (bio + profile picture, under your name in the nav), public seller profile pages (linked from any listing's "Seller" card), a Favorites/Wishlist ("Save to Favorites" button on any listing you don't own), and working Accommodation/Electronics/Services placeholder pages — those three nav links existed since Phase 1 but had no controller behind them until now (they were 404ing).
 
 13. **Phase 8 — Electronics, and the dynamic listing form**: rather than building a separate Electronics marketplace, one `Listing` entity and one form now serve both Books and Electronics (and Fashion/Study Supplies once Phases 9-10 land). Each `Category` now has a `Module` (Books/Electronics/Fashion/StudySupplies/Accommodation/Services) — when creating a category in Admin → Categories, set its Module to match what it's for. The listing form shows Book fields (Author/ISBN/Course/Faculty) or Item fields (Type/Brand/Model/dynamic Specifications list) automatically based on which category is selected, via a small vanilla-JS toggle keyed off each category's Module — no page reload, no separate forms to maintain. To try it: create a category with Module = Electronics, then create a listing under it.
+
+14. **Phase 9 — Fashion**: no new fields or form logic needed — Fashion listings use the exact same Type/Brand/Model/Specifications fields Electronics does. The only addition is `ListingTypeSuggestions.Fashion` (Shoes/Jerseys/Jackets/Hoodies/Dresses/Watches/Bags/Jewellery/Caps/Sunglasses/Other), and the Type field's autocomplete suggestions now swap between the Electronics list and the Fashion list depending on which category's Module is selected. To try it: create a category with Module = Fashion, then create a listing under it — same form, different suggestions.
 
 > **Note on the index requirement above**: Phase 5 changed how Browse/filtering works internally — sorting now happens in the app rather than as a Firestore `orderBy`, which means the *original* Browse query from Phase 4 no longer needs a composite index at all. If you already created that index per step 8, it's now unused but harmless; if you're setting this up fresh, you likely won't hit that error for Browse/My Listings anymore. This trade-off (documented in `IListingRepository`) is fine for an MVP-sized catalogue — a large one would want to move filtering back into Firestore query clauses or a dedicated search index.
 
