@@ -7,6 +7,7 @@ namespace VarsityLoop.Services.Interfaces
     public interface IListingService
     {
         Task<ListingBrowseResult> BrowseAsync(ListingBrowseQuery query);
+        Task<MarketplaceHomeFeed> GetHomeFeedAsync();
         Task<Listing?> GetDetailsAsync(string id, bool countView);
         Task<List<Listing>> GetMyListingsAsync(string sellerId);
 

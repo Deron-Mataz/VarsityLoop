@@ -4,27 +4,27 @@ using VarsityLoop.Models.Common;
 namespace VarsityLoop.Models.Entities
 {
     /// <summary>
-    /// Which field set / listing form a category maps to. Reserved values for
-    /// Section 2 phases not yet built (Fashion, StudySupplies, Accommodation,
-    /// Services) are included now so Category records created today don't
-    /// need a schema change when those phases land - only new UI/behavior
-    /// keyed off the same enum value.
+    /// The fixed, system-defined Marketplace modules. NOT editable by admins -
+    /// admins create Categories under a Module, they never create Modules
+    /// themselves (per the "Marketplace > Module > Category > Listing"
+    /// hierarchy). Accommodation and Services are deliberately excluded: they
+    /// are separate platform areas (Accommodation gets its own module in
+    /// Phase 11; Services is future work), not Marketplace categories.
     /// </summary>
     public enum CategoryModule
     {
         Books,
         Electronics,
         Fashion,
-        StudySupplies,
-        Accommodation,
-        Services
+        Accessories,
+        StudySupplies
     }
 
     /// <summary>
-    /// Stored in the "Categories" collection. Deliberately minimal and not
-    /// tied to books - Faculty/Course filtering for textbooks lives on the
-    /// Listing itself (Phase 4), while Category here is the broad grouping
-    /// shown in "Browse Categories" and used as a Listing filter.
+    /// Stored in the "Categories" collection. Categories organise listings
+    /// within a Module - they are NOT product types (the seller specifies the
+    /// actual product via the Listing's Type field). Faculty/Course filtering
+    /// for textbooks lives on the Listing itself (Phase 4).
     /// </summary>
     [FirestoreData]
     public class Category : BaseEntity
@@ -41,11 +41,20 @@ namespace VarsityLoop.Models.Entities
         /// <summary>
         /// Which field set the listing form shows for listings under this
         /// category - e.g. "Books" categories get Author/ISBN/Course fields,
-        /// "Electronics" categories get Type/Brand/Model/Specifications. This
-        /// is what lets one Listing entity and one form serve every module
-        /// without duplicating forms per category, per the Section 2 spec.
+        /// "Electronics"/"StudySupplies" get Type/Brand/Model/Specifications,
+        /// "Fashion"/"Accessories" get Type/Brand/Colour/Model/Size. This is
+        /// what lets one Listing entity and one form serve every module
+        /// without duplicating forms per category.
         /// </summary>
         [FirestoreProperty("module")]
         public string Module { get; set; } = CategoryModule.Books.ToString();
+
+        /// <summary>
+        /// Bootstrap Icons class name (e.g. "bi-book"), chosen manually by the
+        /// admin from a module-appropriate list at creation time - never
+        /// auto-assigned. Falls back to a generic icon in the UI if empty.
+        /// </summary>
+        [FirestoreProperty("iconClass")]
+        public string? IconClass { get; set; }
     }
 }

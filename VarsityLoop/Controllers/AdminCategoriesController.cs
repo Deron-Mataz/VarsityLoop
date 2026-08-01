@@ -40,7 +40,7 @@ namespace VarsityLoop.Controllers
 
             if (!ModelState.IsValid) return View(model);
 
-            var result = await _categoryService.CreateAsync(model.Name, model.Description, model.DisplayOrder, model.Module);
+            var result = await _categoryService.CreateAsync(model.Name, model.Description, model.DisplayOrder, model.Module, model.IconClass);
 
             if (!result.Success)
             {
@@ -66,6 +66,7 @@ namespace VarsityLoop.Controllers
                 Name = category.Name,
                 Description = category.Description,
                 DisplayOrder = category.DisplayOrder,
+                IconClass = category.IconClass ?? string.Empty,
                 Module = Enum.TryParse<VarsityLoop.Models.Entities.CategoryModule>(category.Module, out var m) ? m : VarsityLoop.Models.Entities.CategoryModule.Books
             });
         }
@@ -78,7 +79,7 @@ namespace VarsityLoop.Controllers
 
             if (!ModelState.IsValid) return View(model);
 
-            var result = await _categoryService.UpdateAsync(id, model.Name, model.Description, model.DisplayOrder, model.Module);
+            var result = await _categoryService.UpdateAsync(id, model.Name, model.Description, model.DisplayOrder, model.Module, model.IconClass);
 
             if (!result.Success)
             {

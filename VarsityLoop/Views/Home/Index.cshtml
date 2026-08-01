@@ -84,7 +84,6 @@
         <h2 class="h4 mb-4">Browse Categories</h2>
         @{
             var categories = ViewData["Categories"] as List<VarsityLoop.Models.Entities.Category> ?? new();
-            var categoryIcons = new[] { "bi-book", "bi-backpack2", "bi-laptop", "bi-house-door", "bi-lamp", "bi-mortarboard", "bi-pencil", "bi-flask" };
         }
         @if (categories.Count == 0)
         {
@@ -101,7 +100,7 @@
                     <div class="col-6 col-md-3">
                         <a asp-controller="Listings" asp-action="Browse" asp-route-categoryId="@categories[i].Id"
                            class="vl-card vl-card-hover p-3 d-block text-center text-decoration-none text-reset h-100">
-                            <div class="fs-3 mb-1 text-primary"><i class="bi @categoryIcons[i % categoryIcons.Length]"></i></div>
+                            <div class="fs-3 mb-1 text-primary"><i class="bi @(categories[i].IconClass ?? "bi-tag")"></i></div>
                             <span class="fw-semibold">@categories[i].Name</span>
                         </a>
                     </div>

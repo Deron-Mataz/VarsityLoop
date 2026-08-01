@@ -2,6 +2,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Logging;
 using VarsityLoop.Models.Entities;
 using VarsityLoop.Models.ViewModels.Listings;
 using VarsityLoop.Repositories.Interfaces;
@@ -16,28 +17,61 @@ namespace VarsityLoop.Controllers
         private readonly IReportService _reportService;
         private readonly IFavoriteService _favoriteService;
         private readonly IUserRepository _userRepository;
+        private readonly ILogger<ListingsController> _logger;
 
-        public ListingsController(IListingService listingService, ICategoryService categoryService, IReportService reportService, IFavoriteService favoriteService, IUserRepository userRepository)
+        public ListingsController(
+            IListingService listingService,
+            ICategoryService categoryService,
+            IReportService reportService,
+            IFavoriteService favoriteService,
+            IUserRepository userRepository,
+            ILogger<ListingsController> logger)
         {
             _listingService = listingService;
             _categoryService = categoryService;
             _reportService = reportService;
             _favoriteService = favoriteService;
             _userRepository = userRepository;
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// Logs exactly which field(s) failed model validation and why, so a
+        /// silently-rejected form submission is never a mystery - check the
+        /// Output window / application logs for a line starting
+        /// "ModelState invalid on..." after any failed Create/Edit attempt.
+        /// </summary>
+        private void LogModelStateErrors(string action)
+        {
+            var errors = ModelState
+                .Where(kvp => kvp.Value?.Errors.Count > 0)
+                .Select(kvp => $"{kvp.Key}: {string.Join("; ", kvp.Value!.Errors.Select(e => e.ErrorMessage))}");
+
+            _logger.LogWarning("ModelState invalid on Listings/{Action}: {Errors}", action, string.Join(" | ", errors));
         }
 
         private string? CurrentUserId => User.FindFirstValue(ClaimTypes.NameIdentifier);
         private bool CurrentUserIsModerator => User.IsInRole(RoleNames.Admin) || User.IsInRole(RoleNames.SuperAdmin);
 
         [HttpGet]
-        public async Task<IActionResult> Browse(string? q, string? categoryId, double? minPrice, double? maxPrice,
+        public async Task<IActionResult> Browse(string? q, string? module, string? categoryId, double? minPrice, double? maxPrice,
             ListingCondition? condition, ListingSortOption sort = ListingSortOption.Newest, int page = 1)
         {
             ViewData["Title"] = "Marketplace";
 
+            var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest" || Request.Query["partial"] == "1";
+            var showHomeFeed = string.IsNullOrWhiteSpace(module) && string.IsNullOrWhiteSpace(categoryId) && string.IsNullOrWhiteSpace(q);
+
+            if (showHomeFeed)
+            {
+                var feed = await _listingService.GetHomeFeedAsync();
+                return isAjax ? PartialView("_MarketplaceHomeFeed", feed) : View("Browse", await BuildBrowseViewModel(feed: feed));
+            }
+
             var query = new ListingBrowseQuery
             {
                 SearchTerm = q,
+                Module = module,
                 CategoryId = categoryId,
                 MinPrice = minPrice,
                 MaxPrice = maxPrice,
@@ -47,16 +81,26 @@ namespace VarsityLoop.Controllers
             };
 
             var result = await _listingService.BrowseAsync(query);
-            var categories = await _categoryService.GetAllAsync();
 
-            var model = new ListingBrowseViewModel
+            if (isAjax)
             {
-                Result = result,
-                Query = query,
-                Categories = categories
-            };
+                return PartialView("_MarketplaceResults", result);
+            }
 
-            return View(model);
+            var fullModel = await BuildBrowseViewModel(query: query, result: result);
+            return View(fullModel);
+        }
+
+        private async Task<ListingBrowseViewModel> BuildBrowseViewModel(ListingBrowseQuery? query = null, ListingBrowseResult? result = null, MarketplaceHomeFeed? feed = null)
+        {
+            var categories = await _categoryService.GetAllAsync();
+            return new ListingBrowseViewModel
+            {
+                Query = query ?? new ListingBrowseQuery(),
+                Result = result ?? new ListingBrowseResult(),
+                Categories = categories,
+                HomeFeed = feed
+            };
         }
 
         [HttpGet]
@@ -109,8 +153,14 @@ namespace VarsityLoop.Controllers
         {
             ViewData["Title"] = "Create Listing";
 
+            // Diagnostic: shows exactly what the server received, independent of
+            // whether model binding/validation succeeded - if a field the user
+            // filled in doesn't appear here (or is blank here) despite being
+            // visibly filled in the browser, the bug is upstream of this action
+            // entirely (the form's HTML/JS), not in validation or the service layer.
             if (!ModelState.IsValid)
             {
+                LogModelStateErrors(nameof(Create));
                 await PopulateCategoriesAsync();
                 return View(model);
             }
@@ -122,6 +172,7 @@ namespace VarsityLoop.Controllers
 
             if (!result.Success)
             {
+                _logger.LogWarning("Listing creation rejected for user {UserId}: {ErrorMessage}", currentUser.Id, result.ErrorMessage);
                 ModelState.AddModelError(string.Empty, result.ErrorMessage ?? "Couldn't create listing.");
                 await PopulateCategoriesAsync();
                 return View(model);
@@ -158,7 +209,7 @@ namespace VarsityLoop.Controllers
                 Location = listing.Location,
                 Type = listing.Type,
                 Brand = listing.Brand,
-                Model = listing.Model,
+                ProductModel = listing.Model,
                 Specifications = listing.Specifications,
                 ExistingImageUrls = listing.ImageUrls
             };
@@ -176,6 +227,7 @@ namespace VarsityLoop.Controllers
 
             if (!ModelState.IsValid)
             {
+                LogModelStateErrors(nameof(Edit));
                 await PopulateCategoriesAsync();
                 return View(model);
             }

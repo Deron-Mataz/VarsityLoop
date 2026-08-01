@@ -57,7 +57,6 @@
                         <li class="nav-item"><a class="@NavClass("Home")" asp-controller="Home" asp-action="Index">Home</a></li>
                         <li class="nav-item"><a class="@NavClass("Listings")" asp-controller="Listings" asp-action="Browse">Marketplace</a></li>
                         <li class="nav-item"><a class="@NavClass("Accommodation")" asp-controller="Accommodation" asp-action="Index">Accommodation</a></li>
-                        <li class="nav-item"><a class="@NavClass("Electronics")" asp-controller="Electronics" asp-action="Index">Electronics</a></li>
                         <li class="nav-item"><a class="@NavClass("Services")" asp-controller="Services" asp-action="Index">Services</a></li>
                     </ul>
                     <ul class="navbar-nav">
@@ -117,11 +116,12 @@
                     </ul>
                 </div>
                 <div class="col-6 col-md-3">
-                    <h6>Categories</h6>
+                    <h6>Marketplace</h6>
                     <ul class="list-unstyled small">
+                        <li class="mb-2"><a asp-controller="Listings" asp-action="Browse" asp-route-module="Books">Books</a></li>
+                        <li class="mb-2"><a asp-controller="Listings" asp-action="Browse" asp-route-module="Electronics">Electronics</a></li>
+                        <li class="mb-2"><a asp-controller="Listings" asp-action="Browse" asp-route-module="Fashion">Fashion</a></li>
                         <li class="mb-2"><a asp-controller="Accommodation" asp-action="Index">Accommodation</a></li>
-                        <li class="mb-2"><a asp-controller="Electronics" asp-action="Index">Electronics</a></li>
-                        <li class="mb-2"><a asp-controller="Services" asp-action="Index">Services</a></li>
                     </ul>
                 </div>
                 <div class="col-6 col-md-3">

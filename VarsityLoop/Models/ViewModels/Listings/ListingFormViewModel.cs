@@ -44,7 +44,13 @@ namespace VarsityLoop.Models.ViewModels.Listings
         public string? Brand { get; set; }
 
         [StringLength(60)]
-        public string? Model { get; set; }
+        public string? ProductModel { get; set; }
+
+        [StringLength(40)]
+        public string? Colour { get; set; }
+
+        [StringLength(40)]
+        public string? Size { get; set; }
 
         /// <summary>Free-text spec lines (e.g. "8GB RAM"), added/removed dynamically in the form.</summary>
         public List<string> Specifications { get; set; } = new();

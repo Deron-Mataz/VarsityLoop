@@ -1,0 +1,47 @@
+@model VarsityLoop.Models.ViewModels.Listings.MarketplaceHomeFeed
+
+@{
+    var sections = new (string Title, string Module, System.Collections.Generic.List<VarsityLoop.Models.Entities.Listing> Items, string AccentClass)[]
+    {
+        ("Featured Listings", "", Model.Featured, ""),
+        ("Recently Added Books", "Books", Model.RecentBooks, "vl-module-books-accent"),
+        ("Trending Electronics", "Electronics", Model.TrendingElectronics, "vl-module-electronics-accent"),
+        ("Latest Fashion", "Fashion", Model.LatestFashion, "vl-module-fashion-accent"),
+        ("Popular Accessories", "Accessories", Model.PopularAccessories, "vl-module-accessories-accent"),
+        ("Study Supplies", "StudySupplies", Model.StudySupplies, "vl-module-studysupplies-accent")
+    };
+    var anySection = sections.Any(s => s.Items.Count > 0);
+}
+
+@if (!anySection)
+{
+    <div class="vl-card vl-empty-state">
+        <h5>No listings yet</h5>
+        <p class="mb-0">Be the first to list something on Varsity Loop.</p>
+    </div>
+}
+else
+{
+    @foreach (var section in sections)
+    {
+        if (section.Items.Count == 0) { continue; }
+
+        <section class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h2 class="h5 mb-0 @@section.AccentClass">@@section.Title</h2>
+                @if (!string.IsNullOrEmpty(section.Module))
+                {
+                    <a asp-controller="Listings" asp-action="Browse" asp-route-module="@@section.Module" class="small">View all &rarr;</a>
+                }
+            </div>
+            <div class="row g-4">
+                @foreach (var listing in section.Items)
+                {
+                    <div class="col-sm-6 col-md-3">
+                        <partial name="_ListingCard" model="listing" />
+                    </div>
+                }
+            </div>
+        </section>
+    }
+}

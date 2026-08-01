@@ -21,6 +21,7 @@ namespace VarsityLoop.Models.ViewModels.Listings
     public class ListingBrowseQuery
     {
         public string? SearchTerm { get; set; }
+        public string? Module { get; set; }
         public string? CategoryId { get; set; }
         public double? MinPrice { get; set; }
         public double? MaxPrice { get; set; }

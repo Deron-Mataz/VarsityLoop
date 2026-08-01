@@ -82,6 +82,14 @@
                     {
                         <dt class="col-5">Model</dt><dd class="col-7">@Model.Model</dd>
                     }
+                    @if (!string.IsNullOrEmpty(Model.Colour))
+                    {
+                        <dt class="col-5">Colour</dt><dd class="col-7">@Model.Colour</dd>
+                    }
+                    @if (!string.IsNullOrEmpty(Model.Size))
+                    {
+                        <dt class="col-5">Size</dt><dd class="col-7">@Model.Size</dd>
+                    }
                     <dt class="col-5">University</dt><dd class="col-7">@Model.University</dd>
                     <dt class="col-5">Location</dt><dd class="col-7">@(Model.Location ?? "—")</dd>
                 </dl>

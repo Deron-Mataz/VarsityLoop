@@ -1,0 +1,22 @@
+@model VarsityLoop.Models.ViewModels.Admin.CategoryViewModel
+
+<div class="mb-4">
+    <label class="form-label">Icon</label>
+    <span asp-validation-for="IconClass" class="invalid-feedback d-block small"></span>
+    <div id="iconPicker">
+        @foreach (var (module, icons) in VarsityLoop.Models.Common.ModuleIconOptions.All)
+        {
+            <div class="vl-icon-group d-flex gap-2 flex-wrap mb-1" data-icon-module="@module">
+                @foreach (var icon in icons)
+                {
+                    <label class="position-relative" style="cursor: pointer;">
+                        <input type="radio" name="IconClass" value="@icon" class="visually-hidden vl-icon-radio" checked="@(Model.IconClass == icon)" />
+                        <span class="vl-icon-option d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; border-radius: 0.6rem; border: 2px solid #e5e0d8; font-size: 1.3rem;">
+                            <i class="bi @icon"></i>
+                        </span>
+                    </label>
+                }
+            </div>
+        }
+    </div>
+</div>

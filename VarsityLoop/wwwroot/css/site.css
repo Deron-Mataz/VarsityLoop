@@ -244,7 +244,89 @@ a.vl-card:hover,
     color: #fff;
 }
 
-/* ---------- Avatar picker (registration / profile) ---------- */
+/* ---------- Category icon picker (Admin) ---------- */
+.vl-icon-radio:checked + .vl-icon-option {
+    border-color: var(--vl-coral) !important;
+    background: var(--vl-peach);
+    color: var(--vl-coral-dark);
+}
+
+/* ---------- Module identity colours ---------- */
+:root {
+    --vl-module-books: #1d4ed8;
+    --vl-module-electronics: #0d9488;
+    --vl-module-fashion: #7c3aed;
+    --vl-module-accessories: #ea580c;
+    --vl-module-studysupplies: #16a34a;
+}
+
+.vl-module-books-accent { color: var(--vl-module-books); }
+.vl-module-electronics-accent { color: var(--vl-module-electronics); }
+.vl-module-fashion-accent { color: var(--vl-module-fashion); }
+.vl-module-accessories-accent { color: var(--vl-module-accessories); }
+.vl-module-studysupplies-accent { color: var(--vl-module-studysupplies); }
+
+/* ---------- Marketplace module nav ---------- */
+.vl-module-nav {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+    -webkit-overflow-scrolling: touch;
+}
+
+.vl-module-btn {
+    flex: 0 0 auto;
+    border: 1px solid rgba(47, 43, 38, 0.1);
+    background: var(--vl-white);
+    border-radius: 2rem;
+    padding: 0.5rem 1.1rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--vl-dark-grey);
+    cursor: pointer;
+    transition: all 0.15s ease;
+    white-space: nowrap;
+}
+
+.vl-module-btn:hover {
+    border-color: var(--vl-module-color, var(--vl-coral));
+}
+
+.vl-module-btn.active {
+    background: var(--vl-module-color, var(--vl-coral));
+    border-color: var(--vl-module-color, var(--vl-coral));
+    color: #fff;
+}
+
+.vl-module-btn[data-module="Books"] { --vl-module-color: var(--vl-module-books); }
+.vl-module-btn[data-module="Electronics"] { --vl-module-color: var(--vl-module-electronics); }
+.vl-module-btn[data-module="Fashion"] { --vl-module-color: var(--vl-module-fashion); }
+.vl-module-btn[data-module="Accessories"] { --vl-module-color: var(--vl-module-accessories); }
+.vl-module-btn[data-module="StudySupplies"] { --vl-module-color: var(--vl-module-studysupplies); }
+
+/* ---------- Category chips ---------- */
+.vl-category-chip {
+    border: 1px solid rgba(47, 43, 38, 0.1);
+    background: var(--vl-white);
+    border-radius: 1.5rem;
+    padding: 0.35rem 0.9rem;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+
+.vl-category-chip.active {
+    background: var(--vl-dark-grey);
+    color: #fff;
+    border-color: var(--vl-dark-grey);
+}
+
+/* ---------- Marketplace results loading state ---------- */
+#marketplaceResults {
+    transition: opacity 0.15s ease;
+    min-height: 200px;
+}
 .vl-avatar-option {
     transition: border-color 0.15s ease, transform 0.15s ease;
 }

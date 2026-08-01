@@ -7,7 +7,7 @@
 
 <div class="mb-3">
     <label asp-for="CategoryId" class="form-label"></label>
-    <select asp-for="CategoryId" id="categorySelect" class="form-select">
+    <select asp-for="CategoryId" class="form-select">
         <option value="">Select a category...</option>
         @foreach (var category in categories)
         {
@@ -15,6 +15,7 @@
         }
     </select>
     <span asp-validation-for="CategoryId" class="invalid-feedback d-block small"></span>
+    <p class="text-muted small mt-1 mb-0">No categories yet for a module you need? An admin can add one under Admin &rarr; Categories.</p>
 </div>
 
 @if (Model.ExistingImageUrls.Any())
@@ -41,7 +42,7 @@
 
 <div class="mb-3">
     <label asp-for="Title" class="form-label"></label>
-    <input asp-for="Title" class="form-control" />
+    <input asp-for="Title" class="form-control" placeholder="e.g. Introduction to Algorithms" />
     <span asp-validation-for="Title" class="invalid-feedback d-block small"></span>
 </div>
 
@@ -66,14 +67,14 @@
     </div>
 </div>
 
-@* ---------- Books fields ---------- *@
+@* ---------- Books-only fields ---------- *@
 <div class="vl-module-fields" data-for-module="Books">
     <div class="vl-card p-3 mb-3 bg-light border-0">
         <h6 class="text-muted text-uppercase small mb-3" style="letter-spacing: 0.03em;">Book Details</h6>
         <div class="row g-3">
             <div class="col-md-4">
                 <label asp-for="Author" class="form-label"></label>
-                <input asp-for="Author" class="form-control" />
+                <input asp-for="Author" class="form-control" placeholder="e.g. Thomas H. Cormen" />
             </div>
             <div class="col-md-4">
                 <label asp-for="Isbn" class="form-label"></label>
@@ -81,7 +82,7 @@
             </div>
             <div class="col-md-4">
                 <label asp-for="Course" class="form-label"></label>
-                <input asp-for="Course" class="form-control" placeholder="e.g. ECO101" />
+                <input asp-for="Course" class="form-control" placeholder="e.g. CSC261" />
             </div>
             <div class="col-md-4">
                 <label asp-for="Faculty" class="form-label"></label>
@@ -91,53 +92,84 @@
     </div>
 </div>
 
-@* ---------- Electronics / Fashion / Study Supplies fields ---------- *@
-<div class="vl-module-fields" data-for-module="Electronics Fashion StudySupplies">
+@* ---------- Type / Brand / Model - shared across Electronics/Fashion/Accessories/StudySupplies.
+     ONE input each (not duplicated per module) so there's never a risk of a hidden group's
+     value silently overriding the visible one on submit. Placeholder text and the Type
+     field's datalist swap via JS based on the selected category's module instead. ---------- *@
+<div class="vl-module-fields" data-for-module="Electronics Fashion Accessories StudySupplies">
     <div class="vl-card p-3 mb-3 bg-light border-0">
         <h6 class="text-muted text-uppercase small mb-3" style="letter-spacing: 0.03em;">Item Details</h6>
         <div class="row g-3 mb-3">
             <div class="col-md-4">
                 <label asp-for="Type" class="form-label"></label>
-                <input asp-for="Type" id="typeInput" class="form-control" list="typeSuggestionsElectronics" placeholder="e.g. Laptop" />
-                <datalist id="typeSuggestionsElectronics">
-                    @foreach (var suggestion in VarsityLoop.Models.Common.ListingTypeSuggestions.Electronics)
-                    {
-                        <option value="@suggestion"></option>
-                    }
-                </datalist>
-                <datalist id="typeSuggestionsFashion">
-                    @foreach (var suggestion in VarsityLoop.Models.Common.ListingTypeSuggestions.Fashion)
-                    {
-                        <option value="@suggestion"></option>
-                    }
-                </datalist>
+                <input asp-for="Type" class="form-control" list="typeSuggestionsElectronics" placeholder="e.g. Laptop" />
             </div>
             <div class="col-md-4">
                 <label asp-for="Brand" class="form-label"></label>
                 <input asp-for="Brand" class="form-control" placeholder="e.g. Samsung" />
             </div>
-            <div class="col-md-4">
-                <label asp-for="Model" class="form-label"></label>
-                <input asp-for="Model" class="form-control" placeholder="e.g. Galaxy A06" />
+            <div class="col-md-4" id="modelFieldWrap">
+                <label asp-for="ProductModel" id="modelLabel" class="form-label"></label>
+                <input asp-for="ProductModel" class="form-control" placeholder="e.g. Galaxy A06" />
             </div>
         </div>
 
-        <label class="form-label">Specifications</label>
-        <div id="specRows">
-            @{ var specs = Model.Specifications is { Count: > 0 } ? Model.Specifications : new List<string> { "" }; }
-            @foreach (var spec in specs)
-            {
-                <div class="input-group mb-2 vl-spec-row">
-                    <input type="text" name="Specifications" class="form-control" value="@spec" placeholder="e.g. 8GB RAM" />
-                    <button type="button" class="btn btn-outline-secondary vl-spec-remove">&times;</button>
-                </div>
-            }
+        @* Colour/Size - Fashion/Accessories only *@
+        <div class="vl-module-fields row g-3 mb-3" data-for-module="Fashion Accessories">
+            <div class="col-md-4">
+                <label asp-for="Colour" class="form-label"></label>
+                <input asp-for="Colour" class="form-control" placeholder="e.g. Black" />
+            </div>
+            <div class="col-md-4">
+                <label asp-for="Size" class="form-label"></label>
+                <input asp-for="Size" class="form-control" placeholder="e.g. Medium, Fits All, 42mm" />
+            </div>
         </div>
-        <button type="button" id="addSpecBtn" class="btn btn-sm btn-outline-primary">
-            <i class="bi bi-plus-lg"></i> Add Specification
-        </button>
+
+        @* Specifications - Electronics/StudySupplies only *@
+        <div class="vl-module-fields" data-for-module="Electronics StudySupplies">
+            <label class="form-label">Specifications</label>
+            <div id="specRows">
+                @{ var specs = Model.Specifications is { Count: > 0 } ? Model.Specifications : new List<string> { "" }; }
+                @for (var i = 0; i < specs.Count; i++)
+                {
+                    <div class="input-group mb-2 vl-spec-row">
+                        <input type="text" name="Specifications[@i]" class="form-control vl-spec-input" value="@specs[i]" placeholder="e.g. 3GB RAM" />
+                        <button type="button" class="btn btn-outline-secondary vl-spec-remove">&times;</button>
+                    </div>
+                }
+            </div>
+            <button type="button" id="addSpecBtn" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-plus-lg"></i> Add Specification
+            </button>
+        </div>
     </div>
 </div>
+
+<datalist id="typeSuggestionsElectronics">
+    @foreach (var suggestion in VarsityLoop.Models.Common.ListingTypeSuggestions.Electronics)
+    {
+        <option value="@suggestion"></option>
+    }
+</datalist>
+<datalist id="typeSuggestionsFashion">
+    @foreach (var suggestion in VarsityLoop.Models.Common.ListingTypeSuggestions.Fashion)
+    {
+        <option value="@suggestion"></option>
+    }
+</datalist>
+<datalist id="typeSuggestionsAccessories">
+    @foreach (var suggestion in VarsityLoop.Models.Common.ListingTypeSuggestions.Accessories)
+    {
+        <option value="@suggestion"></option>
+    }
+</datalist>
+<datalist id="typeSuggestionsStudySupplies">
+    @foreach (var suggestion in VarsityLoop.Models.Common.ListingTypeSuggestions.StudySupplies)
+    {
+        <option value="@suggestion"></option>
+    }
+</datalist>
 
 <div class="row g-3 mb-4">
     <div class="col-md-6">

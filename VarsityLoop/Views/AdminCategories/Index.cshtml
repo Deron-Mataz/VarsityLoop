@@ -33,6 +33,7 @@
             <table class="table mb-0 align-middle">
                 <thead>
                     <tr>
+                        <th></th>
                         <th>Name</th>
                         <th>Module</th>
                         <th>Description</th>
@@ -44,6 +45,7 @@
                     @foreach (var category in Model)
                     {
                         <tr>
+                            <td><i class="bi @(category.IconClass ?? "bi-tag") fs-5 text-muted"></i></td>
                             <td class="fw-semibold">@category.Name</td>
                             <td><span class="badge bg-secondary">@category.Module</span></td>
                             <td class="text-muted small">@category.Description</td>

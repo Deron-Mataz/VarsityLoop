@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using VarsityLoop.Models.Common;
 using VarsityLoop.Models.Entities;
 using VarsityLoop.Models.ViewModels.Listings;
@@ -17,17 +18,38 @@ namespace VarsityLoop.Services.Implementations
         private readonly IStorageService _storageService;
         private readonly ICategoryService _categoryService;
         private readonly IActivityLogService _activityLogService;
+        private readonly ILogger<ListingService> _logger;
 
         public ListingService(
             IListingRepository listingRepository,
             IStorageService storageService,
             ICategoryService categoryService,
-            IActivityLogService activityLogService)
+            IActivityLogService activityLogService,
+            ILogger<ListingService> logger)
         {
             _listingRepository = listingRepository;
             _storageService = storageService;
             _categoryService = categoryService;
             _activityLogService = activityLogService;
+            _logger = logger;
+        }
+
+        public async Task<MarketplaceHomeFeed> GetHomeFeedAsync()
+        {
+            // One read, bucketed in memory into every section - avoids six
+            // separate Firestore round-trips for what's ultimately the same
+            // underlying "all active listings" data.
+            var all = await _listingRepository.GetAllActiveAsync(); // already newest-first
+
+            return new MarketplaceHomeFeed
+            {
+                Featured = all.OrderByDescending(l => l.Views).Take(4).ToList(),
+                RecentBooks = all.Where(l => l.Module == nameof(CategoryModule.Books)).Take(4).ToList(),
+                TrendingElectronics = all.Where(l => l.Module == nameof(CategoryModule.Electronics)).OrderByDescending(l => l.Views).Take(4).ToList(),
+                LatestFashion = all.Where(l => l.Module == nameof(CategoryModule.Fashion)).Take(4).ToList(),
+                PopularAccessories = all.Where(l => l.Module == nameof(CategoryModule.Accessories)).OrderByDescending(l => l.Views).Take(4).ToList(),
+                StudySupplies = all.Where(l => l.Module == nameof(CategoryModule.StudySupplies)).Take(4).ToList()
+            };
         }
 
         public async Task<ListingBrowseResult> BrowseAsync(ListingBrowseQuery query)
@@ -35,6 +57,11 @@ namespace VarsityLoop.Services.Implementations
             var all = await _listingRepository.GetAllActiveAsync();
 
             IEnumerable<Listing> filtered = all;
+
+            if (!string.IsNullOrWhiteSpace(query.Module))
+            {
+                filtered = filtered.Where(l => l.Module == query.Module);
+            }
 
             if (!string.IsNullOrWhiteSpace(query.SearchTerm))
             {
@@ -48,6 +75,7 @@ namespace VarsityLoop.Services.Implementations
                     (l.Type?.ToLowerInvariant().Contains(term) ?? false) ||
                     (l.Brand?.ToLowerInvariant().Contains(term) ?? false) ||
                     (l.Model?.ToLowerInvariant().Contains(term) ?? false) ||
+                    (l.Colour?.ToLowerInvariant().Contains(term) ?? false) ||
                     l.University.ToLowerInvariant().Contains(term) ||
                     l.SellerName.ToLowerInvariant().Contains(term));
             }
@@ -126,7 +154,17 @@ namespace VarsityLoop.Services.Implementations
                 return OperationResult<string>.Fail(validationError);
             }
 
-            var category = await _categoryService.GetByIdAsync(model.CategoryId);
+            Category? category;
+            try
+            {
+                category = await _categoryService.GetByIdAsync(model.CategoryId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to look up category {CategoryId} while creating a listing for seller {SellerId}", model.CategoryId, sellerId);
+                return OperationResult<string>.Fail("We couldn't verify the selected category. Please try again in a moment.");
+            }
+
             if (category == null)
             {
                 return OperationResult<string>.Fail("Please choose a valid category.");
@@ -135,13 +173,29 @@ namespace VarsityLoop.Services.Implementations
             // Generate the document Id up front so uploaded images can live under
             // a folder named for the listing they belong to (listings/{id}/...).
             var listingId = Guid.NewGuid().ToString("N");
-            var imageUrls = await UploadImagesAsync(imageFiles, listingId);
+
+            List<string> imageUrls;
+            try
+            {
+                imageUrls = await UploadImagesAsync(imageFiles, listingId);
+            }
+            catch (Exception ex)
+            {
+                // Never let an upload failure surface as a generic 500 / silent
+                // failure - log full detail server-side, tell the seller plainly
+                // that nothing was published, so they don't assume it worked.
+                _logger.LogError(ex, "Image upload failed while creating listing {ListingId} for seller {SellerId}", listingId, sellerId);
+                return OperationResult<string>.Fail(
+                    "We couldn't upload your photos, so the listing was NOT published. " +
+                    "This is usually a Firebase Storage configuration issue on the server - please try again, and contact support if it keeps happening.");
+            }
 
             var listing = new Listing
             {
                 Id = listingId,
                 CategoryId = category.Id,
                 CategoryName = category.Name,
+                Module = category.Module,
                 Title = model.Title.Trim(),
                 Description = model.Description.Trim(),
                 Price = model.Price,
@@ -154,7 +208,9 @@ namespace VarsityLoop.Services.Implementations
                 Location = model.Location?.Trim(),
                 Type = model.Type?.Trim(),
                 Brand = model.Brand?.Trim(),
-                Model = model.Model?.Trim(),
+                Model = model.ProductModel?.Trim(),
+                Colour = model.Colour?.Trim(),
+                Size = model.Size?.Trim(),
                 Specifications = model.Specifications?.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).ToList() ?? new List<string>(),
                 ImageUrls = imageUrls,
                 SellerId = sellerId,
@@ -162,7 +218,24 @@ namespace VarsityLoop.Services.Implementations
                 Status = ListingStatus.Active.ToString()
             };
 
-            await _listingRepository.AddAsync(listing);
+            try
+            {
+                await _listingRepository.AddAsync(listing);
+            }
+            catch (Exception ex)
+            {
+                // The images already uploaded successfully at this point, but the
+                // Firestore write itself failed - this is the scenario the spec
+                // calls out explicitly ("never fail silently"). Log everything
+                // needed to diagnose it, and tell the seller clearly that the
+                // listing was NOT created rather than leaving them guessing.
+                _logger.LogError(ex,
+                    "Firestore write failed while creating listing {ListingId} for seller {SellerId}. Uploaded image URLs: {ImageUrls}",
+                    listingId, sellerId, string.Join(", ", imageUrls));
+                return OperationResult<string>.Fail(
+                    "We uploaded your photos but couldn't save the listing itself, so it was NOT published. " +
+                    "Please try again - if this keeps happening, contact support and mention the time you tried.");
+            }
 
             return OperationResult<string>.Ok(listingId);
         }
@@ -213,12 +286,23 @@ namespace VarsityLoop.Services.Implementations
                 }
             }
 
-            var newlyUploadedUrls = newImageFiles.Count > 0
-                ? await UploadImagesAsync(newImageFiles, listing.Id)
-                : new List<string>();
+            List<string> newlyUploadedUrls;
+            try
+            {
+                newlyUploadedUrls = newImageFiles.Count > 0
+                    ? await UploadImagesAsync(newImageFiles, listing.Id)
+                    : new List<string>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Image upload failed while updating listing {ListingId}", listing.Id);
+                return OperationResult.Fail(
+                    "We couldn't upload your new photos, so none of your changes were saved. Please try again.");
+            }
 
             listing.CategoryId = category.Id;
             listing.CategoryName = category.Name;
+            listing.Module = category.Module;
             listing.Title = model.Title.Trim();
             listing.Description = model.Description.Trim();
             listing.Price = model.Price;
@@ -231,11 +315,22 @@ namespace VarsityLoop.Services.Implementations
             listing.Location = model.Location?.Trim();
             listing.Type = model.Type?.Trim();
             listing.Brand = model.Brand?.Trim();
-            listing.Model = model.Model?.Trim();
+            listing.Model = model.ProductModel?.Trim();
+            listing.Colour = model.Colour?.Trim();
+            listing.Size = model.Size?.Trim();
             listing.Specifications = model.Specifications?.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).ToList() ?? new List<string>();
             listing.ImageUrls = model.ExistingImageUrls.Concat(newlyUploadedUrls).ToList();
 
-            await _listingRepository.UpdateAsync(listing.Id, listing);
+            try
+            {
+                await _listingRepository.UpdateAsync(listing.Id, listing);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Firestore write failed while updating listing {ListingId}", listing.Id);
+                return OperationResult.Fail(
+                    "We couldn't save your changes. Please try again - if this keeps happening, contact support.");
+            }
 
             return OperationResult.Ok();
         }

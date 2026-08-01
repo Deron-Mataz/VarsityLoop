@@ -19,5 +19,9 @@ namespace VarsityLoop.Models.ViewModels.Admin
         [Required]
         [Display(Name = "Marketplace Module")]
         public VarsityLoop.Models.Entities.CategoryModule Module { get; set; } = VarsityLoop.Models.Entities.CategoryModule.Books;
+
+        [Required(ErrorMessage = "Please choose an icon.")]
+        [Display(Name = "Icon")]
+        public string IconClass { get; set; } = string.Empty;
     }
 }

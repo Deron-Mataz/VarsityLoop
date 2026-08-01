@@ -2,100 +2,71 @@
 @{
     ViewData["Title"] = "Marketplace";
     var q = Model.Query;
+    var modules = new[] { "Books", "Electronics", "Fashion", "Accessories", "StudySupplies" };
+    var moduleLabels = new Dictionary<string, string>
+    {
+        { "Books", "Books" }, { "Electronics", "Electronics" }, { "Fashion", "Fashion" },
+        { "Accessories", "Accessories" }, { "StudySupplies", "Study Supplies" }
+    };
+    var currentModule = Model.HomeFeed != null
+        ? ""
+        : (!string.IsNullOrEmpty(q.Module)
+            ? q.Module
+            : Model.Categories.FirstOrDefault(c => c.Id == q.CategoryId)?.Module ?? "");
 }
 
-<div class="container py-5">
+<div class="container py-5"
+     id="marketplaceRoot"
+     data-browse-url="@Url.Action("Browse", "Listings")"
+     data-initial-module="@currentModule"
+     data-initial-category="@q.CategoryId"
+     data-initial-sort="@q.Sort">
+
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
         <h1 class="h3 mb-0">Marketplace</h1>
         <a asp-controller="Listings" asp-action="Create" class="btn btn-primary">List an Item</a>
     </div>
 
-    <form asp-controller="Listings" asp-action="Browse" method="get" class="vl-card p-3 mb-4">
-        <div class="row g-3 align-items-end">
-            <div class="col-md-3">
-                <label class="form-label small">Search</label>
-                <input type="text" name="q" value="@q.SearchTerm" class="form-control" placeholder="Title, author, ISBN, course..." />
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small">Category</label>
-                <select name="categoryId" class="form-select">
-                    <option value="">All Categories</option>
-                    @foreach (var category in Model.Categories)
-                    {
-                        <option value="@category.Id" selected="@(q.CategoryId == category.Id)">@category.Name</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small">Condition</label>
-                <select name="condition" class="form-select">
-                    <option value="">Any Condition</option>
-                    @foreach (var c in Enum.GetValues<VarsityLoop.Models.Entities.ListingCondition>())
-                    {
-                        <option value="@c" selected="@(q.Condition == c)">@c</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-1">
-                <label class="form-label small">Min R</label>
-                <input type="number" name="minPrice" value="@q.MinPrice" min="0" class="form-control" />
-            </div>
-            <div class="col-md-1">
-                <label class="form-label small">Max R</label>
-                <input type="number" name="maxPrice" value="@q.MaxPrice" min="0" class="form-control" />
-            </div>
-            <div class="col-md-2">
-                <label class="form-label small">Sort</label>
-                <select name="sort" class="form-select">
-                    @foreach (var s in Enum.GetValues<VarsityLoop.Models.ViewModels.Listings.ListingSortOption>())
-                    {
-                        <option value="@s" selected="@(q.Sort == s)">@s</option>
-                    }
-                </select>
-            </div>
-            <div class="col-md-1">
-                <button type="submit" class="btn btn-primary w-100">Go</button>
-            </div>
-        </div>
+    @* ---------- Search bar (above module nav - the primary action) ---------- *@
+    <form id="marketplaceSearchForm" class="vl-card p-2 d-flex mb-3" style="max-width: 640px;">
+        <input type="text" id="marketplaceSearchInput" value="@q.SearchTerm" class="form-control border-0" placeholder="Search the marketplace..." />
+        <button type="submit" class="btn btn-primary ms-2"><i class="bi bi-search"></i></button>
     </form>
 
-    @if (Model.Result.Items.Count == 0)
-    {
-        <div class="vl-card vl-empty-state">
-            <h5>No listings match your filters</h5>
-            <p class="mb-0">Try widening your search or clearing a filter.</p>
-        </div>
-    }
-    else
-    {
-        <p class="text-muted small mb-3">@Model.Result.TotalCount result@(Model.Result.TotalCount == 1 ? "" : "s")</p>
-
-        <div class="row g-4">
-            @foreach (var listing in Model.Result.Items)
-            {
-                <div class="col-sm-6 col-md-4 col-lg-3">
-                    <partial name="_ListingCard" model="listing" />
-                </div>
-            }
-        </div>
-
-        @if (Model.Result.TotalPages > 1)
+    @* ---------- Module navigation ---------- *@
+    <div class="vl-module-nav mb-3">
+        <button type="button" class="vl-module-btn @(string.IsNullOrEmpty(currentModule) ? "active" : "")" data-module="">All</button>
+        @foreach (var m in modules)
         {
-            <nav class="mt-4">
-                <ul class="pagination justify-content-center">
-                    @for (var p = 1; p <= Model.Result.TotalPages; p++)
-                    {
-                        <li class="page-item @(p == Model.Result.Page ? "active" : "")">
-                            <a class="page-link"
-                               asp-controller="Listings" asp-action="Browse"
-                               asp-route-q="@q.SearchTerm" asp-route-categoryId="@q.CategoryId"
-                               asp-route-minPrice="@q.MinPrice" asp-route-maxPrice="@q.MaxPrice"
-                               asp-route-condition="@q.Condition" asp-route-sort="@q.Sort"
-                               asp-route-page="@p">@p</a>
-                        </li>
-                    }
-                </ul>
-            </nav>
+            <button type="button" class="vl-module-btn @(currentModule == m ? "active" : "")" data-module="@m">@moduleLabels[m]</button>
         }
-    }
+    </div>
+
+    @* ---------- Category chips (filtered to the selected module by JS) ---------- *@
+    <div id="categoryChips" class="d-flex gap-2 flex-wrap mb-4" style="display: @(string.IsNullOrEmpty(currentModule) ? "none" : "flex");">
+        @foreach (var category in Model.Categories)
+        {
+            <span class="vl-category-chip @(q.CategoryId == category.Id ? "active" : "")"
+                  data-module="@category.Module" data-category-id="@category.Id"
+                  style="display: @(category.Module == currentModule ? "inline-block" : "none");">
+                @if (!string.IsNullOrEmpty(category.IconClass))
+                {
+                    <i class="bi @category.IconClass me-1"></i>
+                }
+                @category.Name
+            </span>
+        }
+    </div>
+
+    @* ---------- Results (server-rendered on first load, AJAX-swapped after) ---------- *@
+    <div id="marketplaceResults">
+        @if (Model.HomeFeed != null)
+        {
+            <partial name="_MarketplaceHomeFeed" model="Model.HomeFeed" />
+        }
+        else
+        {
+            <partial name="_MarketplaceResults" model="Model.Result" />
+        }
+    </div>
 </div>

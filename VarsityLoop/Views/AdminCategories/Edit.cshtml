@@ -28,6 +28,8 @@
                     <p class="text-muted small mt-1 mb-0">Determines which fields the listing form shows for listings in this category.</p>
                 </div>
 
+                <partial name="_CategoryIconPicker" model="Model" />
+
                 <div class="mb-4">
                     <label asp-for="DisplayOrder" class="form-label"></label>
                     <input asp-for="DisplayOrder" type="number" class="form-control" style="max-width: 120px;" />

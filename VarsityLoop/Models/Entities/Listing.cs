@@ -81,6 +81,22 @@ namespace VarsityLoop.Models.Entities
         [FirestoreProperty("specifications")]
         public List<string> Specifications { get; set; } = new();
 
+        [FirestoreProperty("colour")]
+        public string? Colour { get; set; }
+
+        [FirestoreProperty("size")]
+        public string? Size { get; set; }
+
+        /// <summary>
+        /// Denormalized copy of the selected Category's Module at the time of
+        /// creation/edit (e.g. "Electronics"). Filtering the Marketplace by
+        /// Module would otherwise require resolving every listing's category -
+        /// storing it directly here keeps that a single equality filter, same
+        /// reasoning as CategoryName being denormalized in Phase 5.
+        /// </summary>
+        [FirestoreProperty("module")]
+        public string Module { get; set; } = string.Empty;
+
         // --- Common to every listing, regardless of module ---
         [FirestoreProperty("university")]
         public string University { get; set; } = string.Empty;

@@ -3,9 +3,7 @@ namespace VarsityLoop.Models.Common
     /// <summary>
     /// Suggested "Type" values shown in the listing form's datalist per
     /// module. These are suggestions, not an enum - a seller can type
-    /// anything, per the spec's "not limited to" wording. Centralized here
-    /// so Phase 9 (Fashion) and Phase 10 (Study Supplies) add their own
-    /// static list alongside this one rather than hardcoding options in a view.
+    /// anything, per the spec's "not limited to" wording.
     /// </summary>
     public static class ListingTypeSuggestions
     {
@@ -18,8 +16,19 @@ namespace VarsityLoop.Models.Common
 
         public static readonly string[] Fashion =
         {
-            "Shoes", "Jerseys", "Jackets", "Hoodies", "Dresses", "Watches",
-            "Bags", "Jewellery", "Caps", "Sunglasses", "Other"
+            "Hoodie", "T-Shirt", "Jacket", "Jersey", "Dress", "Pants", "Shorts", "Other"
+        };
+
+        public static readonly string[] Accessories =
+        {
+            "Sunglasses", "Phone Case", "Watch", "Handbag", "Wallet", "Belt", "Jewellery", "Other"
+        };
+
+        public static readonly string[] StudySupplies =
+        {
+            "Scientific Calculator", "Geometry Set", "Lab Coat", "Notebook", "File",
+            "Lever Arch File", "Pen", "Pencil", "Highlighter", "Whiteboard", "Whiteboard Marker",
+            "Art Supplies", "Engineering Equipment", "Printing Paper", "USB Flash Drive", "Other"
         };
     }
 }
