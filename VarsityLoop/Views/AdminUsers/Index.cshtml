@@ -35,6 +35,7 @@
                     <th>University</th>
                     <th>Role</th>
                     <th>Status</th>
+                    <th>Landlord</th>
                     <th>Joined</th>
                     <th></th>
                 </tr>
@@ -75,6 +76,23 @@
                             else
                             {
                                 <span class="badge bg-secondary">@user.AccountStatus</span>
+                            }
+                        </td>
+                        <td>
+                            @if (user.LandlordVerificationStatus == "Approved")
+                            {
+                                <div class="d-flex align-items-center gap-1">
+                                    <span class="badge badge-green">Approved</span>
+                                    <form asp-controller="AdminUsers" asp-action="RevokeLandlord" asp-route-id="@user.Id" method="post">
+                                        <button type="submit" class="btn btn-sm btn-link p-0 text-danger">Revoke</button>
+                                    </form>
+                                </div>
+                            }
+                            else
+                            {
+                                <form asp-controller="AdminUsers" asp-action="ApproveLandlord" asp-route-id="@user.Id" method="post">
+                                    <button type="submit" class="btn btn-sm btn-outline-primary">Approve as Landlord</button>
+                                </form>
                             }
                         </td>
                         <td class="small text-muted">@user.CreatedAt.ToDateTime().ToString("MMM d, yyyy")</td>

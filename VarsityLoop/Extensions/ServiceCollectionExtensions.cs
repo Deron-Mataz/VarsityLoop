@@ -89,6 +89,8 @@ namespace VarsityLoop.Extensions
 
             services.AddScoped<IListingRepository, ListingRepository>();
             services.AddScoped<IFavoriteRepository, FavoriteRepository>();
+            services.AddScoped<IAccommodationRepository, AccommodationRepository>();
+            services.AddScoped<ILandlordApplicationRepository, LandlordApplicationRepository>();
 
             services.AddScoped<IFirestoreRepository<Category>>(sp =>
                 new FirestoreRepository<Category>(sp.GetRequiredService<FirestoreDb>(), "Categories"));
@@ -151,6 +153,18 @@ namespace VarsityLoop.Extensions
         public static IServiceCollection AddFavoriteServices(this IServiceCollection services)
         {
             services.AddScoped<IFavoriteService, FavoriteService>();
+            return services;
+        }
+
+        /// <summary>
+        /// Registers Phase 11 services: Student Accommodation. Deliberately
+        /// separate from AddListingServices - Accommodation is not a
+        /// Marketplace module.
+        /// </summary>
+        public static IServiceCollection AddAccommodationServices(this IServiceCollection services)
+        {
+            services.AddScoped<IAccommodationService, AccommodationService>();
+            services.AddScoped<ILandlordVerificationService, LandlordVerificationService>();
             return services;
         }
 

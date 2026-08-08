@@ -217,6 +217,7 @@ namespace VarsityLoop.Controllers
                 new(ClaimTypes.Role, user.Role),
                 new("university", user.University),
                 new("picture", user.ProfilePictureUrl ?? string.Empty)
+                ,new("landlordStatus", user.LandlordVerificationStatus)
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);

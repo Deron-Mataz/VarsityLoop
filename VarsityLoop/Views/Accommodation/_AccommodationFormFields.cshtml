@@ -1,0 +1,98 @@
+@model VarsityLoop.Models.ViewModels.Accommodation.AccommodationFormViewModel
+
+<input type="hidden" asp-for="Id" />
+
+@if (Model.ExistingGalleryUrls.Any())
+{
+    <div class="mb-3">
+        <label class="form-label">Current Gallery</label>
+        <div class="d-flex gap-2 flex-wrap">
+            @for (var i = 0; i < Model.ExistingGalleryUrls.Count; i++)
+            {
+                <img src="@Model.ExistingGalleryUrls[i]" style="width: 90px; height: 90px; object-fit: cover; border-radius: 0.5rem;" />
+                <input type="hidden" name="ExistingGalleryUrls[@i]" value="@Model.ExistingGalleryUrls[i]" />
+            }
+        </div>
+        <p class="text-muted small mt-1 mb-0">Uploading new photos below adds to these (up to 10 total).</p>
+    </div>
+}
+
+<div class="mb-3">
+    <label asp-for="GalleryFiles" class="form-label"></label>
+    <input type="file" name="GalleryFiles" multiple class="form-control" accept="image/png,image/jpeg,image/webp" />
+    <p class="text-muted small mt-1 mb-0">JPG, PNG, or WEBP. Up to 10 photos, 5MB each.</p>
+</div>
+
+<div class="mb-3">
+    <label asp-for="ResidenceName" class="form-label"></label>
+    <input asp-for="ResidenceName" class="form-control" placeholder="e.g. Kovsie Village" />
+    <span asp-validation-for="ResidenceName" class="invalid-feedback d-block small"></span>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <label asp-for="Classification" class="form-label"></label>
+        <select asp-for="Classification" class="form-select" asp-items="Html.GetEnumSelectList<VarsityLoop.Models.Entities.ResidenceClassification>()"></select>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="AccommodationType" class="form-label"></label>
+        <select asp-for="AccommodationType" class="form-select" asp-items="Html.GetEnumSelectList<VarsityLoop.Models.Entities.AccommodationType>()"></select>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-4">
+        <label asp-for="MonthlyRent" class="form-label"></label>
+        <div class="input-group">
+            <span class="input-group-text">R</span>
+            <input asp-for="MonthlyRent" type="number" step="0.01" min="0" class="form-control" />
+        </div>
+        <span asp-validation-for="MonthlyRent" class="invalid-feedback d-block small"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Deposit" class="form-label"></label>
+        <div class="input-group">
+            <span class="input-group-text">R</span>
+            <input asp-for="Deposit" type="number" step="0.01" min="0" class="form-control" />
+        </div>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="GenderPreference" class="form-label"></label>
+        <select asp-for="GenderPreference" class="form-select" asp-items="Html.GetEnumSelectList<VarsityLoop.Models.Entities.GenderPreference>()"></select>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <label asp-for="University" class="form-label"></label>
+        <input asp-for="University" class="form-control" />
+        <span asp-validation-for="University" class="invalid-feedback d-block small"></span>
+    </div>
+    <div class="col-md-6">
+        <label asp-for="DistanceFromCampus" class="form-label"></label>
+        <input asp-for="DistanceFromCampus" class="form-control" placeholder="e.g. 1.2 km from campus" />
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <label asp-for="AvailableFrom" class="form-label"></label>
+        <input asp-for="AvailableFrom" type="date" class="form-control" />
+    </div>
+    <div class="col-md-6">
+        <label asp-for="LeasePeriod" class="form-label"></label>
+        <input asp-for="LeasePeriod" class="form-control" placeholder="e.g. 12 months" />
+    </div>
+</div>
+
+<div class="mb-3">
+    <label asp-for="Description" class="form-label"></label>
+    <textarea asp-for="Description" class="form-control" rows="4"></textarea>
+    <span asp-validation-for="Description" class="invalid-feedback d-block small"></span>
+</div>
+
+<div class="mb-4">
+    <label asp-for="GoogleMapsUrl" class="form-label"></label>
+    <input asp-for="GoogleMapsUrl" class="form-control" placeholder="https://maps.google.com/..." />
+    <span asp-validation-for="GoogleMapsUrl" class="invalid-feedback d-block small"></span>
+</div>

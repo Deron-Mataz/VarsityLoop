@@ -1,0 +1,98 @@
+@model VarsityLoop.Models.ViewModels.Accommodation.AccommodationBrowseResult
+@{
+    ViewData["Title"] = "Student Accommodation";
+    var q = Context.Request.Query;
+}
+
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-4">
+        <div>
+            <h1 class="h3 mb-1">Student Accommodation</h1>
+            <p class="text-muted small mb-0">Accredited and private residences near your campus.</p>
+        </div>
+        <a asp-controller="Accommodation" asp-action="Create" class="btn btn-primary">List a Residence</a>
+    </div>
+
+    <form asp-controller="Accommodation" asp-action="Index" method="get" class="vl-card p-3 mb-4">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label small">University</label>
+                <input type="text" name="university" value="@q["university"]" class="form-control" placeholder="e.g. Central University of Technology" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Classification</label>
+                <select name="classification" class="form-select">
+                    <option value="">Any</option>
+                    @foreach (var c in Enum.GetValues<VarsityLoop.Models.Entities.ResidenceClassification>())
+                    {
+                        <option value="@c" selected="@(q["classification"] == c.ToString())">@c</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Type</label>
+                <select name="accommodationType" class="form-select">
+                    <option value="">Any</option>
+                    @foreach (var t in Enum.GetValues<VarsityLoop.Models.Entities.AccommodationType>())
+                    {
+                        <option value="@t" selected="@(q["accommodationType"] == t.ToString())">@t</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Max Rent (R)</label>
+                <input type="number" name="maxRent" value="@q["maxRent"]" min="0" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label small">Gender</label>
+                <select name="genderPreference" class="form-select">
+                    <option value="">Any</option>
+                    @foreach (var g in Enum.GetValues<VarsityLoop.Models.Entities.GenderPreference>())
+                    {
+                        <option value="@g" selected="@(q["genderPreference"] == g.ToString())">@g</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100">Go</button>
+            </div>
+        </div>
+    </form>
+
+    @if (Model.Items.Count == 0)
+    {
+        <div class="vl-card vl-empty-state">
+            <h5>No residences match</h5>
+            <p class="mb-0">Try widening your search or check back soon.</p>
+        </div>
+    }
+    else
+    {
+        <p class="text-muted small mb-3">@Model.TotalCount result@(Model.TotalCount == 1 ? "" : "s")</p>
+        <div class="row g-4">
+            @foreach (var accommodation in Model.Items)
+            {
+                <div class="col-sm-6 col-md-4 col-lg-3">
+                    <partial name="_AccommodationCard" model="accommodation" />
+                </div>
+            }
+        </div>
+
+        @if (Model.TotalPages > 1)
+        {
+            <nav class="mt-4">
+                <ul class="pagination justify-content-center">
+                    @for (var p = 1; p <= Model.TotalPages; p++)
+                    {
+                        <li class="page-item @(p == Model.Page ? "active" : "")">
+                            <a class="page-link" asp-controller="Accommodation" asp-action="Index"
+                               asp-route-university="@q["university"]" asp-route-classification="@q["classification"]"
+                               asp-route-accommodationType="@q["accommodationType"]" asp-route-maxRent="@q["maxRent"]"
+                               asp-route-genderPreference="@q["genderPreference"]" asp-route-page="@p">@p</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        }
+    }
+</div>

@@ -50,6 +50,21 @@ namespace VarsityLoop.Services.Implementations
             return $"https://firebasestorage.googleapis.com/v0/b/{_bucketName}/o/{encodedObjectName}?alt=media";
         }
 
+        public async Task<string> UploadPrivateFileAsync(Stream fileStream, string originalFileName, string contentType, string folder)
+        {
+            var objectName = $"{folder.Trim('/')}/{Guid.NewGuid():N}_{SanitizeFileName(originalFileName)}";
+            await _storageClient.UploadObjectAsync(_bucketName, objectName, contentType, fileStream);
+            return objectName;
+        }
+
+        public async Task<Stream> DownloadPrivateFileAsync(string storagePath)
+        {
+            var stream = new MemoryStream();
+            await _storageClient.DownloadObjectAsync(_bucketName, storagePath, stream);
+            stream.Position = 0;
+            return stream;
+        }
+
         private static string SanitizeFileName(string fileName)
         {
             var invalidChars = Path.GetInvalidFileNameChars();

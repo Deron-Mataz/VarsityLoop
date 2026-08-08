@@ -1,0 +1,7 @@
+using Google.Cloud.Firestore;
+using VarsityLoop.Models.Common;
+namespace VarsityLoop.Models.Entities;
+public enum LandlordVerificationStatus { None, Pending, UnderReview, Approved, Rejected, Suspended }
+public enum LandlordDocumentType { IdentityDocument, ProofOfOwnership, AccreditationDocumentation, SupportingDocumentation }
+[FirestoreData] public class LandlordDocument { [FirestoreProperty("documentType")] public string DocumentType { get; set; } = string.Empty; [FirestoreProperty("storagePath")] public string StoragePath { get; set; } = string.Empty; [FirestoreProperty("fileName")] public string FileName { get; set; } = string.Empty; }
+[FirestoreData] public class LandlordApplication : BaseEntity { [FirestoreProperty("userId")] public string UserId { get; set; } = string.Empty; [FirestoreProperty("userName")] public string UserName { get; set; } = string.Empty; [FirestoreProperty("userEmail")] public string UserEmail { get; set; } = string.Empty; [FirestoreProperty("status")] public string Status { get; set; } = nameof(LandlordVerificationStatus.Pending); [FirestoreProperty("documents")] public List<LandlordDocument> Documents { get; set; } = new(); [FirestoreProperty("adminFeedback")] public string? AdminFeedback { get; set; } [FirestoreProperty("submittedAt")] public Timestamp? SubmittedAt { get; set; } [FirestoreProperty("reviewedAt")] public Timestamp? ReviewedAt { get; set; } [FirestoreProperty("reviewedBy")] public string? ReviewedBy { get; set; } }

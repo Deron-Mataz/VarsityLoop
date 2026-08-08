@@ -93,5 +93,21 @@ namespace VarsityLoop.Services.Implementations
             await _activityLogService.LogAsync(actorId, actorName, "Deleted account", "User", userId, target.Email);
             return OperationResult.Ok();
         }
+
+        public async Task<OperationResult> SetLandlordVerificationStatusAsync(string userId, bool approve, string actorId, string actorName)
+        {
+            var target = await _userRepository.GetByIdAsync(userId);
+            if (target == null) return OperationResult.Fail("User not found.");
+
+            var status = approve ? "Approved" : "None";
+
+            await _userRepository.UpdateFieldsAsync(userId, new Dictionary<string, object?>
+            {
+                { "landlordVerificationStatus", status }
+            });
+
+            await _activityLogService.LogAsync(actorId, actorName, $"Set landlord status to {status}", "User", userId, target.Email);
+            return OperationResult.Ok();
+        }
     }
 }

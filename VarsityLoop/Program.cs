@@ -47,6 +47,9 @@ builder.Services.AddAdminServices();
 // Favorites/Wishlist (Phase 7).
 builder.Services.AddFavoriteServices();
 
+// Student Accommodation (Phase 11) - separate from the Marketplace.
+builder.Services.AddAccommodationServices();
+
 // Cookie-based session authentication. The cookie itself only ever carries
 // claims (uid, email, name, role) written at sign-in time from the Firestore
 // user profile - Firebase's own tokens are never stored in the cookie.
@@ -64,6 +67,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
+builder.Services.AddAuthorization(options => options.AddPolicy("ApprovedLandlord", policy => policy.RequireClaim("landlordStatus", "Approved")));
 
 var app = builder.Build();
 

@@ -1,0 +1,100 @@
+@model VarsityLoop.Models.Entities.Accommodation
+@{
+    ViewData["Title"] = Model.ResidenceName;
+    var isOwner = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value == Model.LandlordId;
+}
+
+<div class="container py-5">
+    @if (TempData["SuccessMessage"] != null)
+    {
+        <div class="alert alert-success">@TempData["SuccessMessage"]</div>
+    }
+    @if (Model.Status != nameof(VarsityLoop.Models.Entities.AccommodationStatus.Active))
+    {
+        <div class="alert alert-warning">This residence is currently <strong>@Model.Status</strong> and only visible to you.</div>
+    }
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="vl-card overflow-hidden mb-3" style="aspect-ratio: 4/3; background: #eef0f3;">
+                @if (Model.Gallery.Count > 0)
+                {
+                    <img src="@Model.Gallery[0]" alt="@Model.ResidenceName" class="w-100 h-100" style="object-fit: cover;" />
+                }
+                else
+                {
+                    <div class="w-100 h-100 d-flex align-items-center justify-content-center text-muted">No photo</div>
+                }
+            </div>
+            @if (Model.Gallery.Count > 1)
+            {
+                <div class="d-flex gap-2 flex-wrap">
+                    @foreach (var url in Model.Gallery.Skip(1))
+                    {
+                        <img src="@url" alt="@Model.ResidenceName" style="width: 80px; height: 80px; object-fit: cover; border-radius: 0.5rem;" />
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-5">
+            <span class="badge @(Model.Classification == "Accredited" ? "badge-green" : "bg-secondary") mb-2">@Model.Classification Residence</span>
+            <h1 class="h3 mb-1">@Model.ResidenceName</h1>
+            <p class="text-muted mb-3">@Model.AccommodationType &middot; @Model.University</p>
+            <p class="h4 text-primary mb-3">R@(Model.MonthlyRent.ToString("N2"))<span class="fs-6 text-muted">/month</span></p>
+
+            <div class="vl-card p-3 mb-3">
+                <dl class="row mb-0 small">
+                    <dt class="col-5">Deposit</dt><dd class="col-7">R@(Model.Deposit.ToString("N2"))</dd>
+                    <dt class="col-5">Distance from Campus</dt><dd class="col-7">@(Model.DistanceFromCampus ?? "—")</dd>
+                    <dt class="col-5">Available From</dt><dd class="col-7">@Model.AvailableFrom.ToDateTime().ToString("MMM d, yyyy")</dd>
+                    <dt class="col-5">Lease Period</dt><dd class="col-7">@(Model.LeasePeriod ?? "—")</dd>
+                    <dt class="col-5">Gender Preference</dt><dd class="col-7">@Model.GenderPreference</dd>
+                </dl>
+            </div>
+
+            <div class="vl-card p-3 mb-3">
+                <h2 class="h6">Description</h2>
+                <p class="mb-0" style="white-space: pre-wrap;">@Model.Description</p>
+            </div>
+
+            @if (!string.IsNullOrEmpty(Model.GoogleMapsUrl))
+            {
+                <div class="vl-card p-3 mb-3">
+                    <a href="@Model.GoogleMapsUrl" target="_blank" rel="noopener"><i class="bi bi-geo-alt-fill me-1"></i>View on Google Maps</a>
+                </div>
+            }
+
+            <div class="vl-card p-3 mb-3">
+                <h2 class="h6 mb-1">Landlord</h2>
+                <a asp-controller="Sellers" asp-action="Details" asp-route-id="@Model.LandlordId" class="text-decoration-none">@Model.LandlordName</a>
+            </div>
+
+            @if (isOwner)
+            {
+                <div class="d-flex gap-2 flex-wrap">
+                    <a asp-controller="Accommodation" asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Edit</a>
+                    @if (Model.Status == nameof(VarsityLoop.Models.Entities.AccommodationStatus.Active))
+                    {
+                        <form asp-controller="Accommodation" asp-action="Pause" asp-route-id="@Model.Id" method="post">
+                            <button type="submit" class="btn btn-outline-secondary">Pause</button>
+                        </form>
+                    }
+                    else if (Model.Status == nameof(VarsityLoop.Models.Entities.AccommodationStatus.Paused))
+                    {
+                        <form asp-controller="Accommodation" asp-action="Reactivate" asp-route-id="@Model.Id" method="post">
+                            <button type="submit" class="btn btn-outline-primary">Reactivate</button>
+                        </form>
+                    }
+                    <form asp-controller="Accommodation" asp-action="Delete" asp-route-id="@Model.Id" method="post" onsubmit="return confirm('Delete this residence? This can\'t be undone.');">
+                        <button type="submit" class="btn btn-outline-danger">Delete</button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <p class="text-muted small">Direct messaging with landlords is coming soon - for now, use the contact details on their profile.</p>
+            }
+        </div>
+    </div>
+</div>

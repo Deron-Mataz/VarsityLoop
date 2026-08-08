@@ -46,6 +46,17 @@ namespace VarsityLoop.Models.Entities
         [FirestoreProperty("emailVerified")]
         public bool EmailVerified { get; set; } = false;
 
+        /// <summary>
+        /// "None" (default - not a landlord), "Pending", "UnderReview", "Approved",
+        /// "Rejected", "Suspended" (Phase 12 owns the full application/document
+        /// workflow that drives these transitions). Only "Approved" may publish
+        /// Accommodation listings - enforced in AccommodationService, not just
+        /// the UI. For now, an Admin can set this manually from Admin > Users
+        /// as a stopgap until the full verification flow exists.
+        /// </summary>
+        [FirestoreProperty("landlordVerificationStatus")]
+        public string LandlordVerificationStatus { get; set; } = nameof(Entities.LandlordVerificationStatus.None);
+
         [FirestoreProperty("lastLoginAt")]
         public Timestamp? LastLoginAt { get; set; }
 

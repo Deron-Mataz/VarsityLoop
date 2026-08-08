@@ -13,5 +13,7 @@ namespace VarsityLoop.Services.Interfaces
         /// public URL.
         /// </summary>
         Task<string> UploadPublicFileAsync(Stream fileStream, string originalFileName, string contentType, string folder);
+        Task<string> UploadPrivateFileAsync(Stream fileStream, string originalFileName, string contentType, string folder);
+        Task<Stream> DownloadPrivateFileAsync(string storagePath);
     }
 }
