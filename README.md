@@ -29,55 +29,6 @@ This solution is being built in phases. **Phase 1 (Foundation) is complete.**
 
 Later phases will build directly on top of what's here — nothing below needs to be redone.
 
-## Setup (Visual Studio 2022)
-
-1. **Firebase project**: create one at https://console.firebase.google.com if you don't have one. Enable:
-   - Authentication (Email/Password provider)
-   - Firestore Database
-   - Storage
-
-2. **Service account key**: Project Settings → Service Accounts → "Generate new private key". Save the downloaded JSON as
-   `VarsityLoop/firebase-service-account.json` (this exact path is already git-ignored).
-
-3. **App config**: copy `VarsityLoop/appsettings.example.json` to `VarsityLoop/appsettings.json` and fill in:
-   - `ProjectId`, `ApiKey`, `AuthDomain`, `StorageBucket` — from Project Settings → General
-   - `ServiceAccountKeyPath` — leave as `firebase-service-account.json` if you followed step 2
-
-4. Open `VarsityLoop.sln` in Visual Studio 2022. (Bootstrap 5 loads from the jsDelivr CDN with a Subresource Integrity hash — no local restore step needed.)
-
-5. Press F5. The app throws a clear startup error if the service account file or config is missing — that's expected until step 2/3 are done.
-
-6. **First admin account**: in `appsettings.json`, set `AppSettings:DefaultAdminEmail` to the email you plan to register with. That account is automatically granted the `SuperAdmin` role the moment it registers, so you have a way into the Admin Panel on a fresh database. Every other sign-up defaults to the `User` role — all further role changes happen from the Admin Panel (Phase 6) from then on.
-
-7. **Firebase Storage public read rules**: logos/favicons (Site Settings) and listing photos (Phase 4) need to be publicly viewable. In Firebase Console → Storage → Rules, paste `storage.rules` from the repo root and click **Publish** (write access stays server-only, since uploads always go through this app's service account, never the browser directly).
-
-8. **Firestore composite indexes**: Phase 4's listing queries (browse-by-status, search, "my listings") each filter on two fields and sort by a third, which Firestore requires a composite index for. The **first time** each query runs, it throws an error containing a direct "create this index" link — click it, wait ~1-2 minutes for the index to build, then retry. This only needs to happen once per query shape (Browse, MyListings), not per listing.
-
-9. **Create at least one category before listing anything**: go to Admin → Categories → New Category. Listings require a category to be selected, and the dropdown is empty until one exists.
-
-10. **Admin Panel (Phase 6)**: signed-in Admins/SuperAdmins get a dashboard at `/Admin` linking to Users (search, role assignment, deactivate/delete), Listings (search, suspend/remove/restore), Categories, Reports (from the "Report this listing" link on any listing page), and a full Activity Log recording every moderation action. Only a SuperAdmin can grant or revoke the SuperAdmin role — an Admin attempting that gets a clear error rather than a silent failure. No new Firestore indexes are needed for any of this — these queries follow the same single-equality-filter-then-sort-in-memory pattern from Phase 5.
-
-    **Scope note**: the original spec's "Media Library" (a standalone view of all uploaded files) was intentionally left out of Phase 6 — branding assets and listing photos are already manageable through Site Settings and each listing's own edit page respectively, so a separate library view wouldn't add functionality yet. Worth revisiting once there's an actual need to browse/reuse media across listings.
-
-11. **Republish Storage Rules again**: Phase 7 adds profile picture uploads, which need the same public-read treatment as logos/listing photos. The `storage.rules` file in the repo root has been updated — republish it in Firebase Console → Storage → Rules.
-
-12. **Phase 7 additions**: My Profile page (bio + profile picture, under your name in the nav), public seller profile pages (linked from any listing's "Seller" card), a Favorites/Wishlist ("Save to Favorites" button on any listing you don't own), and working Accommodation/Electronics/Services placeholder pages — those three nav links existed since Phase 1 but had no controller behind them until now (they were 404ing).
-
-13. **Phase 8 — Electronics, and the dynamic listing form**: rather than building a separate Electronics marketplace, one `Listing` entity and one form now serve both Books and Electronics (and Fashion/Study Supplies once Phases 9-10 land). Each `Category` now has a `Module` (Books/Electronics/Fashion/StudySupplies/Accommodation/Services) — when creating a category in Admin → Categories, set its Module to match what it's for. The listing form shows Book fields (Author/ISBN/Course/Faculty) or Item fields (Type/Brand/Model/dynamic Specifications list) automatically based on which category is selected, via a small vanilla-JS toggle keyed off each category's Module — no page reload, no separate forms to maintain. To try it: create a category with Module = Electronics, then create a listing under it.
-
-14. **Phase 9 — Fashion**: no new fields or form logic needed — Fashion listings use the exact same Type/Brand/Model/Specifications fields Electronics does. The only addition is `ListingTypeSuggestions.Fashion` (Shoes/Jerseys/Jackets/Hoodies/Dresses/Watches/Bags/Jewellery/Caps/Sunglasses/Other), and the Type field's autocomplete suggestions now swap between the Electronics list and the Fashion list depending on which category's Module is selected. To try it: create a category with Module = Fashion, then create a listing under it — same form, different suggestions.
-
-15. **Pre-Phase-10 Stabilization**: a large correctness/architecture pass before Study Supplies. Highlights:
-    - **Listing creation error handling**: image upload and the Firestore write in `ListingService.CreateAsync`/`UpdateAsync` are now individually wrapped in try/catch, log the full exception server-side, and return a specific, honest error message to the seller instead of ever letting a failure look like nothing happened or bubble to a generic error page. Important honest caveat: I can't run or connect to your Firebase project from where I'm building this, so this is the most rigorous fix I can make without seeing your actual error output. **If listing creation still fails after this**, check the application logs (or Visual Studio's Output window) for a line starting `Image upload failed...` or `Firestore write failed...` — that will show the real underlying exception, and I can fix it precisely from that.
-    - **Marketplace hierarchy**: `Marketplace → Module → Category → Listing`. Modules are fixed/system-defined (`Books`, `Electronics`, `Fashion`, `Accessories`, `StudySupplies` — Accommodation and Services were removed from this enum, they're separate platform areas, not Marketplace categories). Admins create Categories under a Module; they never create Modules.
-    - **Fashion vs Accessories split**: Fashion (clothing: Hoodie/T-Shirt/Jacket/...) and Accessories (Sunglasses/Watch/Bag/...) are now separate modules, both using Type/Brand/Colour/Model(optional)/Size — distinct from Electronics/StudySupplies, which use Type/Brand/Model/Specifications.
-    - **Dynamic placeholders**: every module-specific field now shows the spec's example text (e.g. Electronics Type → "e.g. Phone, Laptop, Fridge"), swapping automatically via JS when the selected category's Module changes.
-    - **Category icons**: `Category.IconClass` is now a real field. Admin → Categories → Create/Edit has a module-filtered icon picker (Bootstrap Icons) — nothing is auto-assigned; the admin must pick one.
-    - **Marketplace browsing redesign**: Browse is now Search bar → Module nav (All/Books/Electronics/Fashion/Accessories/Study Supplies, each module colour-coded) → Category chips for the selected module → Results. Switching module/category/searching updates results via `fetch()` against the same `Browse` action (which returns a partial when called with `X-Requested-With: XMLHttpRequest`) — no full page reload, with `history.pushState` so back/forward still works. "All" shows a curated home feed (Featured / Recently Added Books / Trending Electronics / Latest Fashion / Popular Accessories / Study Supplies) instead of one mixed list.
-    - **Data migration note**: listings created *before* this update don't have the new `Module`/`Colour`/`Size` fields populated (they'll show as empty/not appear under module-specific home-feed sections until then). Opening one in Edit and clicking Save backfills `Module` automatically. If you created test categories with the old Module values `Accommodation` or `Services` during Phase 8/9 testing, delete them from Admin → Categories — those values no longer exist in the enum.
-
-> **Note on the index requirement above**: Phase 5 changed how Browse/filtering works internally — sorting now happens in the app rather than as a Firestore `orderBy`, which means the *original* Browse query from Phase 4 no longer needs a composite index at all. If you already created that index per step 8, it's now unused but harmless; if you're setting this up fresh, you likely won't hit that error for Browse/My Listings anymore. This trade-off (documented in `IListingRepository`) is fine for an MVP-sized catalogue — a large one would want to move filtering back into Firestore query clauses or a dedicated search index.
-
 ## Architecture notes
 
 - **Generic repository layer** (`IFirestoreRepository<T>` / `FirestoreRepository<T>`): every entity (users, and later listings, categories, etc.) shares one CRUD implementation. Adding a new marketplace module is a new entity class + one DI line, not a new repository.
